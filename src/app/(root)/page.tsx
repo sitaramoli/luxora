@@ -12,7 +12,7 @@ const Page = () => {
       <HeroSection
         title="Luxury Redefined"
         subtitle="Discover exclusive collections from the world's most prestigious brands"
-        backgroundImage="/images/hero.jpg"
+        backgroundImage="/images/Hero.jpg"
         ctaText="Explore Collection"
         ctaLink="/products"
       />
