@@ -1,0 +1,57 @@
+[
+  {
+    "id": "1",
+    "name": "Silk Evening Gown",
+    "brand": "Versace",
+    "price": 2850,
+    "originalPrice": 3200,
+    "image": "https://images.pexels.com/photos/985635/pexels-photo-985635.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "rating": 4.8,
+    "reviewCount": 124,
+    "category": "Dresses",
+    "isNew": false,
+    "isSale": true,
+    "featured": false
+  },
+  {
+    "id": "2",
+    "name": "Leather Handbag",
+    "brand": "Hermès",
+    "price": 4200,
+    "image": "https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "rating": 4.9,
+    "reviewCount": 87,
+    "category": "Bags",
+    "isNew": true,
+    "isSale": false,
+    "featured": true
+
+  },
+  {
+    "id": "3",
+    "name": "Diamond Necklace",
+    "brand": "Tiffany & Co.",
+    "price": 8500,
+    "image": "https://images.pexels.com/photos/1232931/pexels-photo-1232931.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "rating": 4.7,
+    "reviewCount": 45,
+    "category": "Jewelry",
+    "isNew": false,
+    "isSale": false,
+    "featured": true
+  },
+  {
+    "id": "4",
+    "name": "Cashmere Coat",
+    "brand": "Burberry",
+    "price": 1890,
+    "originalPrice": 2100,
+    "image": "https://images.pexels.com/photos/1126993/pexels-photo-1126993.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "rating": 4.6,
+    "reviewCount": 203,
+    "category": "Outerwear",
+    "isNew": true,
+    "isSale": true,
+    "featured": true
+  }
+]
