@@ -113,7 +113,7 @@ const AboutPage: React.FC = () => {
             from around the globe.
           </p>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Our platform brings together carefully vetted luxury vendors,
+            Our platform brings together carefully vetted luxury merchants,
             ensuring that every piece in our collection meets the highest
             standards of quality and authenticity. From timeless classics to
             cutting-edge contemporary designs, Luxora is where luxury meets

@@ -30,7 +30,7 @@ export const stats = [
     icon: ShoppingBag,
   },
   {
-    title: "Active Vendors",
+    title: "Active Merchants",
     value: "247",
     change: "+5.1%",
     changeType: "positive" as const,

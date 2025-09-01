@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import { cn, getStatusColor } from "@/lib/utils";
 
-interface VendorData {
+interface MerchantData {
   name: string;
   email: string;
   phone: string;
@@ -54,7 +54,7 @@ interface Props {
 const Page: React.FC<Props> = ({ params }) => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const [merchantData, setMerchantData] = useState<VendorData>({
+  const [merchantData, setMerchantData] = useState<MerchantData>({
     name: "",
     email: "",
     phone: "",
@@ -77,7 +77,7 @@ const Page: React.FC<Props> = ({ params }) => {
     setIsEditing(false);
   };
 
-  const vendorStats = [
+  const merchantStats = [
     { label: "Total Products", value: "245", icon: Package },
     { label: "Total Sales", value: "$1,247,392", icon: DollarSign },
     { label: "Rating", value: "4.9", icon: Star },
@@ -215,7 +215,7 @@ const Page: React.FC<Props> = ({ params }) => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {vendorStats.map((stat, index) => (
+          {merchantStats.map((stat, index) => (
             <Card key={index}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">

@@ -77,7 +77,7 @@ const PrivacyPage: React.FC = () => {
                     policy:
                   </p>
                   <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                    <li>With vendors to fulfill your orders</li>
+                    <li>With merchants to fulfill your orders</li>
                     <li>With service providers who assist in our operations</li>
                     <li>When required by law or to protect our rights</li>
                     <li>

@@ -1,6 +1,532 @@
-import React from "react";
+"use client";
 
-const Page = () => {
-  return <div>Page</div>;
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Search,
+  Eye,
+  Package,
+  Truck,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Download,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
+import { getPaymentStatusColor } from "@/lib/utils";
+import { orders } from "@/constants/merchant-data";
+
+const getPaymentStatusIcon = (status: string) => {
+  switch (status) {
+    case "PENDING":
+      return <Clock className="h-4 w-4" />;
+    case "PROCESSING":
+      return <Package className="h-4 w-4" />;
+    case "SHIPPED":
+      return <Truck className="h-4 w-4" />;
+    case "DELIVERED":
+      return <CheckCircle className="h-4 w-4" />;
+    case "CANCELLED":
+      return <AlertCircle className="h-4 w-4" />;
+    default:
+      return <Package className="h-4 w-4" />;
+  }
 };
+
+const Page: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
+      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.customer.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || order.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleStatusUpdate = (orderId: string, newStatus: string) => {
+    console.log(`Updating order ${orderId} status to ${newStatus}`);
+    // Here you would call your API to update the order status
+  };
+
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(
+    (order) => order.status === "PENDING",
+  ).length;
+  const processingOrders = orders.filter(
+    (order) => order.status === "PROCESSING",
+  ).length;
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+
+  return (
+    <div className="min-h-screen bg-gray-50 w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Order Management
+          </h1>
+          <p className="text-gray-600">Track and manage your customer orders</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Orders
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {totalOrders}
+                  </p>
+                </div>
+                <Package className="h-8 w-8 text-gray-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Pending Orders
+                  </p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {pendingOrders}
+                  </p>
+                </div>
+                <Clock className="h-8 w-8 text-yellow-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Processing
+                  </p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {processingOrders}
+                  </p>
+                </div>
+                <Truck className="h-8 w-8 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Revenue
+                  </p>
+                  <p className="text-2xl font-bold text-green-600">
+                    ${totalRevenue.toLocaleString()}
+                  </p>
+                </div>
+                <DollarSign className="h-8 w-8 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="orders" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="orders">All Orders</TabsTrigger>
+            <TabsTrigger value="pending">Pending Actions</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="orders" className="mt-6">
+            {/* Filters */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div className="flex flex-col lg:flex-row gap-4 items-center">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      type="text"
+                      placeholder="Search orders..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="PENDING">Pending</SelectItem>
+                      <SelectItem value="PROCESSING">Processing</SelectItem>
+                      <SelectItem value="SHIPPED">Shipped</SelectItem>
+                      <SelectItem value="DELIVERED">Delivered</SelectItem>
+                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Orders List */}
+            <div className="space-y-4">
+              {filteredOrders.map((order) => (
+                <Card key={order.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {order.orderNumber}
+                          </h3>
+                          <Badge
+                            className={getPaymentStatusColor(order.status)}
+                          >
+                            {getPaymentStatusIcon(order.status)}
+                            <span className="ml-1 capitalize">
+                              {order.status}
+                            </span>
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              {new Date(order.orderDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Mail className="h-4 w-4" />
+                            <span>{order.customer.email}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span>${order.total.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setSelectedOrder(
+                              selectedOrder === order.id ? null : order.id,
+                            )
+                          }
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          {selectedOrder === order.id ? "Hide" : "View"} Details
+                        </Button>
+                        {order.status === "pending" && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleStatusUpdate(order.id, "processing")
+                            }
+                          >
+                            Process Order
+                          </Button>
+                        )}
+                        {order.status === "processing" && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleStatusUpdate(order.id, "shipped")
+                            }
+                          >
+                            Mark as Shipped
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {selectedOrder === order.id && (
+                      <div className="border-t pt-6 space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {/* Customer Information */}
+                          <div>
+                            <h4 className="font-semibold mb-3">
+                              Customer Information
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">Name:</span>
+                                <span>{order.customer.name}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 text-gray-500" />
+                                <span>{order.customer.email}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-gray-500" />
+                                <span>{order.customer.phone}</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
+                                <span>{order.customer.address}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Shipping Information */}
+                          <div>
+                            <h4 className="font-semibold mb-3">
+                              Shipping Information
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              <div>
+                                <strong>Method:</strong> {order.shippingMethod}
+                              </div>
+                              <div>
+                                <strong>Estimated Delivery:</strong>{" "}
+                                {order.estimatedDelivery}
+                              </div>
+                              {order.trackingNumber && (
+                                <div>
+                                  <strong>Tracking:</strong>{" "}
+                                  {order.trackingNumber}
+                                </div>
+                              )}
+                              <div>
+                                <strong>Payment Status:</strong>
+                                <Badge className="ml-2 bg-green-100 text-green-800">
+                                  {order.paymentStatus}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Order Items */}
+                        <div>
+                          <h4 className="font-semibold mb-3">Order Items</h4>
+                          <div className="space-y-3">
+                            {order.products.map((product, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                              >
+                                <div>
+                                  <h5 className="font-medium">
+                                    {product.name}
+                                  </h5>
+                                  <p className="text-sm text-gray-600">
+                                    SKU: {product.sku} | Size: {product.size} |
+                                    Color: {product.color}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium">
+                                    Qty: {product.quantity}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    ${product.price.toLocaleString()} each
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Order Summary */}
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <h4 className="font-semibold mb-3">Order Summary</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span>Subtotal:</span>
+                              <span>${order.subtotal.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Shipping:</span>
+                              <span>
+                                {order.shipping === 0
+                                  ? "Free"
+                                  : `$${order.shipping}`}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Tax:</span>
+                              <span>${order.tax.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between font-semibold text-base border-t pt-2">
+                              <span>Total:</span>
+                              <span>${order.total.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {order.notes && (
+                          <div>
+                            <h4 className="font-semibold mb-2">Order Notes</h4>
+                            <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
+                              {order.notes}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="pending" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Orders Requiring Action</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {orders
+                    .filter(
+                      (order) =>
+                        order.status === "pending" ||
+                        order.status === "processing",
+                    )
+                    .map((order) => (
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200"
+                      >
+                        <div>
+                          <h4 className="font-medium text-gray-900">
+                            {order.orderNumber}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {order.customer.name} • $
+                            {order.total.toLocaleString()} • {order.status}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">
+                            View Details
+                          </Button>
+                          <Button size="sm">
+                            {order.status === "pending" ? "Process" : "Ship"}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Order Status Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {["pending", "processing", "shipped", "delivered"].map(
+                      (status) => {
+                        const count = orders.filter(
+                          (order) => order.status === status,
+                        ).length;
+                        const percentage = (count / totalOrders) * 100;
+                        return (
+                          <div
+                            key={status}
+                            className="flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              {getPaymentStatusIcon(status)}
+                              <span className="capitalize">{status}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-blue-600 h-2 rounded-full"
+                                  style={{ width: `${percentage}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm font-medium">
+                                {count}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Revenue</span>
+                      <span className="font-semibold">
+                        ${totalRevenue.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Average Order Value</span>
+                      <span className="font-semibold">
+                        ${(totalRevenue / totalOrders).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Completed Orders</span>
+                      <span className="font-semibold">
+                        {orders.filter((o) => o.status === "delivered").length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Completion Rate</span>
+                      <span className="font-semibold">
+                        {(
+                          (orders.filter((o) => o.status === "delivered")
+                            .length /
+                            totalOrders) *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
 export default Page;

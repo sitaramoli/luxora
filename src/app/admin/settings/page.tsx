@@ -142,7 +142,7 @@ const Page: React.FC = () => {
                           {
                             title: "New merchant applications",
                             description:
-                              "Get notified when vendors apply to join",
+                              "Get notified when merchants apply to join",
                           },
                           {
                             title: "High-value orders",
