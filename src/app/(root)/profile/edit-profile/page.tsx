@@ -46,7 +46,7 @@ interface UserPreferences {
 interface ProfileFormData {
   fullName: string;
   email: string;
-  phoneNumber: string;
+  phone: string;
   gender: "MALE" | "FEMALE" | "OTHER";
 }
 
@@ -59,7 +59,7 @@ const Page = () => {
   const [formData, setFormData] = useState<ProfileFormData>({
     fullName: "",
     email: "",
-    phoneNumber: "",
+    phone: "",
     gender: "MALE",
   });
   const [passwordData, setPasswordData] = useState({
@@ -87,7 +87,7 @@ const Page = () => {
           setFormData({
             fullName: data.user.fullName || "",
             email: data.user.email || "",
-            phoneNumber: data.user.phoneNumber || "",
+            phone: data.user.phone || "",
             gender: data.user.gender || "MALE",
           });
         } catch (error) {
@@ -128,7 +128,7 @@ const Page = () => {
       setFormData({
         fullName: user.fullName || "",
         email: user.email || "",
-        phoneNumber: user.phoneNumber || "",
+        phone: user.phone || "",
         gender: user.gender || "MALE",
       });
     }
@@ -287,12 +287,12 @@ const Page = () => {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="phoneNumber">Phone Number</Label>
+                          <Label htmlFor="phone">Phone</Label>
                           <Input
-                            id="phoneNumber"
-                            value={formData.phoneNumber}
+                            id="phone"
+                            value={formData.phone}
                             onChange={(e) =>
-                              handleProfileChange("phoneNumber", e.target.value)
+                              handleProfileChange("phone", e.target.value)
                             }
                             disabled={!isEditing}
                           />

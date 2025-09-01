@@ -311,9 +311,11 @@ const ContactPage: React.FC = () => {
                   "Yes, we ship to over 25 countries worldwide. International shipping rates and delivery times vary by location.",
               },
               {
-                question: "How do I become a vendor?",
+                question: "How do I become a merchant?",
                 answer:
-                  "You can apply to become a vendor by submitting an application through our vendor portal. Our team will review your application within 5-7 business days.",
+                  "You can apply to become a merchant by submitting an application through our merchant portal. Our team will review your" +
+                  " application" +
+                  " within 5-7 business days.",
               },
             ].map((faq, index) => (
               <Card key={index}>

@@ -27,7 +27,7 @@ export async function generateStaticParams() {
 }
 
 const BrandPage: React.FC<BrandPageProps> = ({ params }) => {
-  // TODO:Mock brand data based on ID
+  // TODO:Mock merchant data based on ID
   const getBrandData = (id: string) => {
     const brands = {
       "1": {
@@ -36,7 +36,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ params }) => {
         name: "Chanel",
         description: "Timeless elegance and sophisticated luxury fashion.",
         longDescription:
-          'Founded in 1910 by Gabrielle "Coco" Chanel, Chanel is a French luxury fashion house that focuses on women\'s ready-to-wear clothes, luxury goods, and accessories. The brand is known for its timeless designs, revolutionary approach to fashion, and iconic products like the Chanel No. 5 perfume and the quilted handbag.',
+          'Founded in 1910 by Gabrielle "Coco" Chanel, Chanel is a French luxury fashion house that focuses on women\'s ready-to-wear clothes, luxury goods, and accessories. The merchant is known for its timeless designs, revolutionary approach to fashion, and iconic products like the Chanel No. 5 perfume and the quilted handbag.',
         image:
           "https://images.pexels.com/photos/1040424/pexels-photo-1040424.jpeg?auto=compress&cs=tinysrgb&w=1200",
         coverImage:
@@ -56,7 +56,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ params }) => {
         name: "Gucci",
         description: "Italian luxury fashion house known for leather goods.",
         longDescription:
-          "Gucci is an Italian luxury brand of fashion and leather goods, part of the Gucci Group, which is owned by the French holding company Kering. Gucci was founded by Guccio Gucci in Florence, Tuscany, in 1921. The brand is known for its innovative designs, quality craftsmanship, and Italian heritage.",
+          "Gucci is an Italian luxury merchant of fashion and leather goods, part of the Gucci Group, which is owned by the French holding company Kering. Gucci was founded by Guccio Gucci in Florence, Tuscany, in 1921. The merchant is known for its innovative designs, quality craftsmanship, and Italian heritage.",
         image:
           "https://images.pexels.com/photos/1188748/pexels-photo-1188748.jpeg?auto=compress&cs=tinysrgb&w=1200",
         coverImage:
@@ -77,7 +77,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ params }) => {
         description:
           "Swiss luxury watch manufacturer with prestigious heritage.",
         longDescription:
-          "Rolex SA is a Swiss luxury watch manufacturer based in Geneva, Switzerland. Founded in 1905 by Hans Wilsdorf and Alfred Davis, Rolex is known for its precision, reliability, and status as a symbol of success and achievement. The brand has been at the forefront of watchmaking innovation for over a century.",
+          "Rolex SA is a Swiss luxury watch manufacturer based in Geneva, Switzerland. Founded in 1905 by Hans Wilsdorf and Alfred Davis, Rolex is known for its precision, reliability, and status as a symbol of success and achievement. The merchant has been at the forefront of watchmaking innovation for over a century.",
         image:
           "https://images.pexels.com/photos/1697214/pexels-photo-1697214.jpeg?auto=compress&cs=tinysrgb&w=1200",
         coverImage:
@@ -97,7 +97,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ params }) => {
 
   const brand = getBrandData(params.slug);
 
-  // TODO:Mock products for this brand
+  // TODO:Mock products for this merchant
   const brandProducts = [
     {
       id: "1",

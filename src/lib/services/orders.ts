@@ -1,8 +1,10 @@
+"use server";
+
 import { db } from "@/database/drizzle";
 import { orders } from "@/database/schema";
 import { desc, eq } from "drizzle-orm";
 
-export const getRecentOrders = async (userId: string) => {
+export const getUserRecentOrders = async (userId: string) => {
   return db
     .select()
     .from(orders)
@@ -11,7 +13,7 @@ export const getRecentOrders = async (userId: string) => {
     .orderBy(desc(orders.createdAt));
 };
 
-export const getAllOrders = async (userId: string) => {
+export const getUsersAllOrders = async (userId: string) => {
   return db
     .select()
     .from(orders)

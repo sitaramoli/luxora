@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,6 @@ import {
   Gift,
   Calendar,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface Notification {
@@ -33,7 +32,6 @@ interface Notification {
 }
 
 const NotificationsPage: React.FC = () => {
-  const { data: session, status } = useSession();
   const router = useRouter();
 
   const [notifications, setNotifications] = useState<Notification[]>([

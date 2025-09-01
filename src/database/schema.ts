@@ -18,6 +18,7 @@ export const ACCOUNT_STATUS_ENUM = pgEnum("account_status", [
   "ACTIVE",
   "PENDING",
   "SUSPENDED",
+  "UNDER_REVIEW",
 ]);
 export const ORDER_STATUS_ENUM = pgEnum("order_status", [
   "PENDING",
@@ -41,7 +42,7 @@ export const users = pgTable("users", {
   fullName: varchar("full_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
-  phoneNumber: varchar("phone_number", { length: 10 }),
+  phone: varchar("phone", { length: 10 }),
   status: ACCOUNT_STATUS_ENUM("status").notNull().default("PENDING"),
   role: USER_ROLE_ENUM("role").notNull().default("CUSTOMER"),
   image: text("image"),
@@ -60,7 +61,7 @@ export const preferences = pgTable("preferences", {
   preferenceValues: text("preference_values").array().notNull().default([]),
 });
 
-export const brands = pgTable("brands", {
+export const merchants = pgTable("merchants", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
   userId: uuid("user_id")
     .notNull()
@@ -73,10 +74,11 @@ export const brands = pgTable("brands", {
   coverPhoto: text("cover_photo").notNull(),
   logo: text("logo").notNull(),
   address: text("address").notNull(),
-  phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   isVerified: boolean("is_verified").notNull().default(false),
   founded: date("founded").notNull(),
+  status: ACCOUNT_STATUS_ENUM("status").notNull().default("PENDING"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -95,7 +97,7 @@ export const products = pgTable("products", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
   brandId: uuid("brand_id")
     .notNull()
-    .references(() => brands.id, { onDelete: "cascade" }),
+    .references(() => merchants.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description").notNull(),
   features: text("features").array().notNull(),
@@ -144,7 +146,7 @@ export const orderItems = pgTable("order_items", {
     .references(() => products.id),
   brandId: text("brand_id")
     .notNull()
-    .references(() => brands.id),
+    .references(() => merchants.id),
   quantity: integer("quantity").notNull(),
   price: decimal("price").notNull(),
   total: decimal("total").notNull(),
@@ -206,9 +208,9 @@ export const reviews = pgTable("reviews", {
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
-  brand: one(brands, {
+  brand: one(merchants, {
     fields: [users.id],
-    references: [brands.userId],
+    references: [merchants.userId],
   }),
   orders: many(orders),
   carts: many(carts),
@@ -216,16 +218,16 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   reviews: many(reviews),
 }));
 
-export const brandsRelations = relations(brands, ({ one, many }) => ({
-  user: one(users, { fields: [brands.userId], references: [users.id] }),
+export const brandsRelations = relations(merchants, ({ one, many }) => ({
+  user: one(users, { fields: [merchants.userId], references: [users.id] }),
   products: many(products),
   orders: many(orderItems),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
-  brand: one(brands, {
+  brand: one(merchants, {
     fields: [products.brandId],
-    references: [brands.id],
+    references: [merchants.id],
   }),
   orderItems: many(orderItems),
   cartItems: many(cartItems),
@@ -244,9 +246,9 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
     fields: [orderItems.productId],
     references: [products.id],
   }),
-  brand: one(brands, {
+  brand: one(merchants, {
     fields: [orderItems.brandId],
-    references: [brands.id],
+    references: [merchants.id],
   }),
 }));
 

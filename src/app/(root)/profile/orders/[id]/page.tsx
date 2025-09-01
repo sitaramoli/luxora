@@ -51,7 +51,7 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ params }) => {
         subtotal: 2850,
         shipping: 0,
         tax: 228,
-        vendor: "Versace",
+        merchant: "Versace",
         trackingNumber: "TRK123456789",
         estimatedDelivery: "2024-01-18",
         shippingMethod: "Express Delivery",

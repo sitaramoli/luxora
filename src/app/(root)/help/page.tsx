@@ -90,16 +90,16 @@ const HelpPage: React.FC = () => {
       ],
     },
     {
-      id: "vendor",
-      title: "Vendor Information",
-      description: "Becoming a vendor, policies, and support",
+      id: "merchant",
+      title: "Merchant Information",
+      description: "Becoming a merchant, policies, and support",
       icon: Store,
       color: "bg-indigo-100 text-indigo-800",
       articles: [
-        { title: "How to become a vendor", views: 3456 },
-        { title: "Vendor application process", views: 2134 },
+        { title: "How to become a merchant", views: 3456 },
+        { title: "Merchant application process", views: 2134 },
         { title: "Commission structure", views: 1876 },
-        { title: "Vendor support resources", views: 1234 },
+        { title: "Merchant support resources", views: 1234 },
       ],
     },
   ];
@@ -113,7 +113,7 @@ const HelpPage: React.FC = () => {
     },
     { title: "How to return an item", category: "Returns", views: 3210 },
     { title: "Accepted payment methods", category: "Payments", views: 2987 },
-    { title: "How to become a vendor", category: "Vendor", views: 2654 },
+    { title: "How to become a merchant", category: "Merchant", views: 2654 },
   ];
 
   const filteredCategories = helpCategories.filter(

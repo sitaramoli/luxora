@@ -1,3 +1,5 @@
+"use server";
+
 import { db } from "@/database/drizzle";
 import { preferences, users } from "@/database/schema";
 import { eq } from "drizzle-orm";
@@ -13,11 +15,11 @@ export const getUserData = async (id: string) => {
     createdAt: user[0].createdAt,
     gender: user[0].gender,
     isVerified: user[0].status === "ACTIVE",
-    phoneNumber: user[0].phoneNumber,
+    phone: user[0].phone,
   };
 };
 
-export const getPreference = async (id: string) => {
+export const getPreferences = async (id: string) => {
   const [preference] = await db
     .select()
     .from(preferences)
@@ -31,4 +33,13 @@ export const getPreference = async (id: string) => {
     );
   }
   return result;
+};
+
+export const getUserRole = async (userId: string) => {
+  const [user] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return user.role;
 };

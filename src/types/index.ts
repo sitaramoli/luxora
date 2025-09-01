@@ -5,7 +5,7 @@ export interface AuthCredentials {
   rememberMe?: boolean;
 }
 
-export type AccountStatus = "ACTIVE" | "PENDING" | "SUSPENDED";
+export type AccountStatus = "ACTIVE" | "PENDING" | "SUSPENDED" | "UNDER_REVIEW";
 export type OrderStatus =
   | "PENDING"
   | "PROCESSING"
@@ -24,7 +24,7 @@ export interface Brand {
   coverPhoto: string;
   logo: string;
   address: string;
-  phoneNumber: string;
+  phone: string;
   email: string;
   isVerified: boolean;
   founded: Date;
@@ -149,8 +149,27 @@ export interface UserProfile {
   email: string;
   image: string | null;
   role: "CUSTOMER" | "ADMIN" | "MERCHANT";
-  createdAt: string;
+  createdAt: Date | string;
   gender: "MALE" | "FEMALE" | "OTHER";
   isVerified: boolean;
-  phoneNumber: string | null;
+  phone: string | null;
+}
+
+export interface Merchant {
+  id: string;
+  name: string;
+  email: string;
+  category: string;
+  status: "ACTIVE" | "PENDING" | "UNDER_REVIEW" | "SUSPENDED";
+  createdAt: string;
+  totalProducts: number;
+  totalSales: string;
+  rating: number;
+  verified: boolean;
+  description: string;
+  website: string;
+  phone: string;
+  address: string;
+  commission: number;
+  lastActive: string;
 }

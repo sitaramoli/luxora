@@ -40,7 +40,7 @@ interface Order {
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   total: number;
   items: number;
-  vendor: string;
+  merchant: string;
   trackingNumber?: string;
   estimatedDelivery?: string;
   products: {
@@ -124,7 +124,7 @@ const OrdersPage = () => {
     return orders.filter((order) => {
       const matchesSearch =
         order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.vendor.toLowerCase().includes(searchQuery.toLowerCase());
+        order.merchant.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
         statusFilter === "all" || order.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -270,7 +270,7 @@ const OrdersPage = () => {
                               </span>
                             </div>
                             <div>
-                              <span>Vendor: {order.vendor}</span>
+                              <span>Merchant: {order.merchant}</span>
                             </div>
                           </div>
                           {order.trackingNumber && (

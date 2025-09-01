@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getAllOrders } from "@/lib/services/orders";
+import { getUsersAllOrders } from "@/lib/services/orders";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     switch (action) {
       case "getAllOrders":
-        const orders = await getAllOrders(session.user.id);
+        const orders = await getUsersAllOrders(session.user.id);
         return NextResponse.json({
           orders,
         });

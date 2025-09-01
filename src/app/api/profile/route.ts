@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/auth";
-import { getPreference, getUserData } from "@/lib/services/users";
-import { getRecentOrders } from "@/lib/services/orders";
+import { getPreferences, getUserData } from "@/lib/services/users";
+import { getUserRecentOrders } from "@/lib/services/orders";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       case "getEditProfileData":
         const [user, preference] = await Promise.all([
           getUserData(session.user.id),
-          getPreference(session.user.id),
+          getPreferences(session.user.id),
         ]);
 
         if (!user) {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       case "getProfileDataAndRecentOrders":
         const [userProfile, recentOrders] = await Promise.all([
           getUserData(session.user.id),
-          getRecentOrders(session.user.id),
+          getUserRecentOrders(session.user.id),
         ]);
 
         if (!userProfile) {
