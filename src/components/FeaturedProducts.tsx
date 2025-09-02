@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -8,7 +8,7 @@ import ProductCard from "@/components/ProductCard";
 import CardSkeleton from "@/components/CardSkeleton";
 import { featuredProducts } from "@/constants";
 
-const FeaturedProducts = () => {
+const FeaturedProducts = memo(() => {
   const [isLoading, setIsLoading] = useState(false);
 
   return (
@@ -41,5 +41,7 @@ const FeaturedProducts = () => {
       </div>
     </section>
   );
-};
+})
+FeaturedProducts.displayName = 'FeaturedProducts';
+
 export default FeaturedProducts;

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,14 +20,36 @@ import {
   ShoppingCart,
   Calendar,
   DollarSign,
+  Filter,
+  RefreshCw,
+  TrendingUp,
+  CheckCircle,
+  Clock,
+  Package,
+  MoreVertical,
+  Truck,
+  CreditCard,
+  User
 } from "lucide-react";
 import { orders } from "@/constants/order-data";
 import { getOrderStatusColor, getPaymentStatusColor } from "@/lib/utils";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { 
+  OrdersChart, 
+  TopProductsChart 
+} from "@/components/dashboard/ChartComponents";
+import {
+  ordersData,
+  topProductsData,
+  miniChartData
+} from "@/constants/dashboard-data";
 
 const Page: React.FC = () => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(false);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -45,80 +68,113 @@ const Page: React.FC = () => {
   const pendingOrders = orders.filter(
     (order) => order.status === "pending",
   ).length;
+  const totalOrders = orders.length;
+
+  const handleRefresh = () => {
+    setIsLoading(true);
+    // Simulate refresh
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 w-full">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Order Management
-          </h1>
-          <p className="text-gray-600">
-            Monitor and manage all orders on the platform
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Order Management
+              </h1>
+              <p className="text-gray-600">
+                Monitor and manage all orders on the platform
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button>
+                <Download className="h-4 w-4 mr-2" />
+                Export Orders
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Orders"
+            value={totalOrders.toString()}
+            change={12.5}
+            changeType="positive"
+            icon={<ShoppingCart className="h-5 w-5" />}
+            chartData={miniChartData.orders}
+            color="#3B82F6"
+            subtitle="All orders"
+          />
+          <StatCard
+            title="Total Revenue"
+            value={`$${(totalRevenue / 1000).toFixed(0)}K`}
+            change={18.2}
+            changeType="positive"
+            icon={<DollarSign className="h-5 w-5" />}
+            chartData={miniChartData.revenue}
+            chartType="area"
+            color="#10B981"
+            subtitle="From all orders"
+          />
+          <StatCard
+            title="Completed Orders"
+            value={completedOrders.toString()}
+            change={8.5}
+            changeType="positive"
+            icon={<CheckCircle className="h-5 w-5" />}
+            chartData={miniChartData.customers}
+            color="#8B5CF6"
+            subtitle="Successfully delivered"
+          />
+          <StatCard
+            title="Pending Orders"
+            value={pendingOrders.toString()}
+            change={-5.2}
+            changeType="negative"
+            icon={<Clock className="h-5 w-5" />}
+            chartData={miniChartData.growth}
+            color="#F59E0B"
+            subtitle="Awaiting processing"
+          />
+        </div>
+
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Orders Trend */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Orders
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {orders.length}
-                  </p>
-                </div>
-                <ShoppingCart className="h-8 w-8 text-gray-400" />
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Orders Trend
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <OrdersChart data={ordersData} />
             </CardContent>
           </Card>
+
+          {/* Top Products */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Revenue
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ${totalRevenue.toLocaleString()}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {completedOrders}
-                  </p>
-                </div>
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {pendingOrders}
-                  </p>
-                </div>
-                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                </div>
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Top Ordered Products
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TopProductsChart data={topProductsData} />
             </CardContent>
           </Card>
         </div>
@@ -161,9 +217,9 @@ const Page: React.FC = () => {
                   <SelectItem value="month">This Month</SelectItem>
                 </SelectContent>
               </Select>
-              <Button>
-                <Download className="h-4 w-4 mr-2" />
-                Export
+              <Button variant="outline">
+                <Filter className="h-4 w-4 mr-2" />
+                More Filters
               </Button>
             </div>
           </CardContent>
@@ -172,12 +228,12 @@ const Page: React.FC = () => {
         {/* Orders List */}
         <div className="space-y-4">
           {filteredOrders.map((order) => (
-            <Card key={order.id}>
+            <Card key={order.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="text-xl font-semibold text-gray-900">
                         {order.id}
                       </h3>
                       <Badge className={getOrderStatusColor(order.status)}>
@@ -189,27 +245,34 @@ const Page: React.FC = () => {
                         {order.paymentStatus}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 mb-1">
-                      Customer: {order.customer.name} ({order.customer.email})
-                    </p>
-                    <p className="text-sm text-gray-600 mb-1">
-                      Merchant: {order.merchant}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Ordered: {order.orderDate}
-                      </span>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <User className="h-4 w-4" />
+                        <span>{order.customer.name} ({order.customer.email})</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Package className="h-4 w-4" />
+                        <span>{order.merchant}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-6 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-500">Ordered: {order.orderDate}</span>
+                      </div>
                       {order.deliveryDate && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Delivered: {order.deliveryDate}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <Truck className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-500">Delivered: {order.deliveryDate}</span>
+                        </div>
                       )}
                     </div>
                   </div>
+                  
                   <div className="text-right">
-                    <p className="text-xl font-bold text-gray-900 mb-1">
+                    <p className="text-2xl font-bold text-gray-900 mb-2">
                       ${order.total.toLocaleString()}
                     </p>
                     <div className="flex gap-2">
@@ -217,19 +280,30 @@ const Page: React.FC = () => {
                         <Eye className="h-4 w-4 mr-2" />
                         View Details
                       </Button>
+                      <Button variant="outline" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>
 
                 <div className="border-t pt-4">
-                  <h4 className="font-medium text-gray-900 mb-2">Products:</h4>
-                  <div className="space-y-1">
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Products ({order.products.length})
+                  </h4>
+                  <div className="space-y-2">
                     {order.products.map((product, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span className="text-gray-600">
-                          {product.name} × {product.quantity}
-                        </span>
-                        <span className="font-medium">
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.name}
+                          </span>
+                          <span className="text-sm text-gray-500 ml-2">
+                            × {product.quantity}
+                          </span>
+                        </div>
+                        <span className="font-medium text-gray-900">
                           ${product.price.toLocaleString()}
                         </span>
                       </div>
@@ -238,9 +312,13 @@ const Page: React.FC = () => {
                 </div>
 
                 <div className="border-t pt-4 mt-4">
-                  <p className="text-sm text-gray-600">
-                    <strong>Shipping Address:</strong> {order.shippingAddress}
-                  </p>
+                  <div className="flex items-start gap-2">
+                    <Truck className="h-4 w-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Shipping Address</p>
+                      <p className="text-sm text-gray-600">{order.shippingAddress}</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

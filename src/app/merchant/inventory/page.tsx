@@ -25,10 +25,30 @@ import {
   BarChart3,
   Download,
   Upload,
+  RefreshCw,
+  Eye,
+  MoreVertical,
+  Calendar,
+  Tag,
+  Store,
+  Clock,
+  DollarSign,
+  ShoppingCart,
+  Star
 } from "lucide-react";
 import { inventoryData } from "@/constants/merchant-data";
 import { getProductStatusColor } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { StatCard } from "@/components/dashboard/StatCard";
+import {
+  SalesDistributionChart,
+  TopProductsChart
+} from "@/components/dashboard/ChartComponents";
+import {
+  salesDistributionData,
+  topProductsData,
+  miniChartData
+} from "@/constants/dashboard-data";
 
 const Page: React.FC = () => {
   const router = useRouter();
@@ -36,6 +56,7 @@ const Page: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -72,6 +93,7 @@ const Page: React.FC = () => {
   const avgStockLevel =
     inventoryData.reduce((sum, item) => sum + item.currentStock, 0) /
     totalProducts;
+  const totalRevenue = inventoryData.reduce((sum, item) => sum + item.revenue30Days, 0);
 
   const handleStockUpdate = (productId: string, newStock: number) => {
     // Here you would update the stock via API
@@ -82,79 +104,111 @@ const Page: React.FC = () => {
     console.log(`Performing ${action} on products:`, selectedProducts);
   };
 
+  const handleRefresh = () => {
+    setIsLoading(true);
+    // Simulate refresh
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 w-full">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Inventory Management
-          </h1>
-          <p className="text-gray-600">
-            Monitor and manage your product inventory
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Inventory Management
+              </h1>
+              <p className="text-gray-600">
+                Monitor and manage your product inventory
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button onClick={() => router.push("/merchant/inventory/add")}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Stock Value"
+            value={`$${(totalStockValue / 1000).toFixed(0)}K`}
+            change={8.2}
+            changeType="positive"
+            icon={<Package className="h-5 w-5" />}
+            chartData={miniChartData.revenue}
+            chartType="area"
+            color="#3B82F6"
+            subtitle="Current inventory value"
+          />
+          <StatCard
+            title="Low Stock Alerts"
+            value={lowStockItems.toString()}
+            change={-12.5}
+            changeType="negative"
+            icon={<AlertTriangle className="h-5 w-5" />}
+            chartData={miniChartData.orders}
+            color="#EF4444"
+            subtitle="Items need restocking"
+          />
+          <StatCard
+            title="Total Products"
+            value={totalProducts.toString()}
+            change={15.3}
+            changeType="positive"
+            icon={<BarChart3 className="h-5 w-5" />}
+            chartData={miniChartData.customers}
+            color="#10B981"
+            subtitle="Active products"
+          />
+          <StatCard
+            title="30-Day Revenue"
+            value={`$${(totalRevenue / 1000).toFixed(0)}K`}
+            change={22.1}
+            changeType="positive"
+            icon={<DollarSign className="h-5 w-5" />}
+            chartData={miniChartData.growth}
+            color="#8B5CF6"
+            subtitle="From inventory sales"
+          />
+        </div>
+
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Inventory Distribution */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Stock Value
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ${totalStockValue.toLocaleString()}
-                  </p>
-                </div>
-                <Package className="h-8 w-8 text-gray-400" />
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Inventory Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SalesDistributionChart data={salesDistributionData} />
             </CardContent>
           </Card>
+
+          {/* Top Performing Products */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Low Stock Alerts
-                  </p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {lowStockItems}
-                  </p>
-                </div>
-                <AlertTriangle className="h-8 w-8 text-red-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Products
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {totalProducts}
-                  </p>
-                </div>
-                <BarChart3 className="h-8 w-8 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Avg Stock Level
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {avgStockLevel.toFixed(1)}
-                  </p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-gray-400" />
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                Top Performing Products
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TopProductsChart data={topProductsData} />
             </CardContent>
           </Card>
         </div>
@@ -167,7 +221,7 @@ const Page: React.FC = () => {
           </TabsList>
 
           <TabsContent value="inventory" className="mt-6">
-            {/* Filters and Actions */}
+            {/* Enhanced Filters and Actions */}
             <Card className="mb-6">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
@@ -176,7 +230,7 @@ const Page: React.FC = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         type="text"
-                        placeholder="Search products..."
+                        placeholder="Search products by name or SKU..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
@@ -191,12 +245,12 @@ const Page: React.FC = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="in_stock">In Stock</SelectItem>
-                        <SelectItem value="low_stock">Low Stock</SelectItem>
-                        <SelectItem value="out_of_stock">
+                        <SelectItem value="IN_STOCK">In Stock</SelectItem>
+                        <SelectItem value="LOW_STOCK">Low Stock</SelectItem>
+                        <SelectItem value="OUT_OF_STOCK">
                           Out of Stock
                         </SelectItem>
-                        <SelectItem value="overstock">Overstock</SelectItem>
+                        <SelectItem value="OVER_STOCK">Overstock</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select
@@ -223,12 +277,6 @@ const Page: React.FC = () => {
                     <Button variant="outline">
                       <Download className="h-4 w-4 mr-2" />
                       Export
-                    </Button>
-                    <Button
-                      onClick={() => router.push("/merchant/inventory/add")}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Product
                     </Button>
                   </div>
                 </div>
@@ -261,12 +309,12 @@ const Page: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Inventory Table */}
+            {/* Enhanced Inventory List */}
             <div className="space-y-4">
               {filteredInventory.map((item) => (
-                <Card key={item.id}>
+                <Card key={item.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-start gap-6">
                       <input
                         type="checkbox"
                         checked={selectedProducts.includes(item.id)}
@@ -279,10 +327,10 @@ const Page: React.FC = () => {
                             );
                           }
                         }}
-                        className="h-4 w-4"
+                        className="h-4 w-4 mt-2"
                       />
 
-                      <div className="w-16 h-16 relative rounded-lg overflow-hidden bg-gray-100">
+                      <div className="w-20 h-20 relative rounded-lg overflow-hidden bg-gray-100">
                         <Image
                           src={item.image}
                           alt={item.name}
@@ -292,95 +340,124 @@ const Page: React.FC = () => {
                       </div>
 
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {item.name}
-                          </h3>
-                          <Badge className={getProductStatusColor(item.status)}>
-                            {getStatusIcon(item.status)}
-                            <span className="ml-1">
-                              {item.status.split("_").join(" ")}
-                            </span>
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                        <div className="flex items-start justify-between mb-3">
                           <div>
-                            <span className="font-medium">SKU:</span> {item.sku}
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {item.name}
+                              </h3>
+                              <Badge className={getProductStatusColor(item.status)}>
+                                {getStatusIcon(item.status)}
+                                <span className="ml-1">
+                                  {item.status.split("_").join(" ")}
+                                </span>
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                              <div className="flex items-center gap-1">
+                                <Tag className="h-4 w-4" />
+                                <span>SKU: {item.sku}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Store className="h-4 w-4" />
+                                <span>{item.category}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                <span>{item.location}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Package className="h-4 w-4" />
+                                <span>{item.supplier}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-medium">Category:</span>{" "}
-                            {item.category}
-                          </div>
-                          <div>
-                            <span className="font-medium">Location:</span>{" "}
-                            {item.location}
-                          </div>
-                          <div>
-                            <span className="font-medium">Supplier:</span>{" "}
-                            {item.supplier}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 mb-1">
-                          Current Stock
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleStockUpdate(item.id, item.currentStock - 1)
-                            }
-                            disabled={item.currentStock <= 0}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="font-bold text-lg min-w-[40px]">
-                            {item.currentStock}
-                          </span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleStockUpdate(item.id, item.currentStock + 1)
-                            }
-                          >
-                            <Plus className="h-3 w-3" />
+                          <Button variant="outline" size="sm">
+                            <MoreVertical className="h-4 w-4" />
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Min: {item.minStock} | Max: {item.maxStock}
-                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {/* Stock Management */}
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm font-medium text-gray-600">
+                                Stock Level
+                              </p>
+                              <span className="text-lg font-bold text-gray-900">
+                                {item.currentStock}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleStockUpdate(item.id, item.currentStock - 1)
+                                }
+                                disabled={item.currentStock <= 0}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleStockUpdate(item.id, item.currentStock + 1)
+                                }
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              Min: {item.minStock} | Max: {item.maxStock}
+                            </p>
+                          </div>
+
+                          {/* Financial Info */}
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Stock Value</span>
+                                <span className="font-semibold">
+                                  ${item.stockValue.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Cost</span>
+                                <span className="text-sm">${item.cost}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Sales Performance */}
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">30-Day Sales</span>
+                                <span className="font-semibold">{item.sales30Days}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Revenue</span>
+                                <span className="text-sm text-green-600">
+                                  ${item.revenue30Days.toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600 mb-1">
-                          Stock Value
-                        </p>
-                        <p className="font-bold text-lg">
-                          ${item.stockValue.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Cost: ${item.cost}
-                        </p>
+                      <div className="flex flex-col gap-2">
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
                       </div>
-
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600 mb-1">
-                          30-Day Sales
-                        </p>
-                        <p className="font-bold text-lg">{item.sales30Days}</p>
-                        <p className="text-xs text-green-600">
-                          ${item.revenue30Days.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
