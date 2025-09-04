@@ -3,19 +3,22 @@ import ProductDetails from "@/components/ProductDetails";
 import { Product, Review } from "@/types";
 
 interface ProductDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
   return [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }, { id: "5" }];
 }
 
-const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ params }) => {
+const ProductDetailPage: React.FC<ProductDetailPageProps> = async ({
+  params,
+}) => {
+  const { id } = await params;
   // Mock product data
   const product: Product = {
-    id: params.id,
+    id: id,
     name: "Silk Evening Gown",
     brand: "Versace",
     slug: "versace",

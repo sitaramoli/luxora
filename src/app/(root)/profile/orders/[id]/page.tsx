@@ -24,18 +24,17 @@ import {
   MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
-import { auth } from "@/auth";
 import { platformInfo } from "@/constants";
 import { useSession } from "next-auth/react";
 
 interface OrderDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ params }) => {
-  const { data: session, status } = useSession();
+const OrderDetailPage: React.FC<OrderDetailPageProps> = async ({ params }) => {
+  const { id } = await params;
   const router = useRouter();
 
   // TODO: Fetch order data from API
@@ -127,7 +126,7 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ params }) => {
     return orders[id as keyof typeof orders] || orders["ORD-001"];
   };
 
-  const order = getOrderData(params.id);
+  const order = getOrderData(id);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

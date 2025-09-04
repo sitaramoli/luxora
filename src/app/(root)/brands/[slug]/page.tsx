@@ -17,16 +17,17 @@ import {
 } from "lucide-react";
 
 interface BrandPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
   return [{ slug: "chanel" }, { slug: "gucci" }, { slug: "rolex" }];
 }
 
-const BrandPage: React.FC<BrandPageProps> = ({ params }) => {
+const BrandPage: React.FC<BrandPageProps> = async ({ params }) => {
+  const { slug } = await params;
   // TODO:Mock merchant data based on ID
   const getBrandData = (id: string) => {
     const brands = {
@@ -95,7 +96,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ params }) => {
     return brands[id as keyof typeof brands] || brands["1"];
   };
 
-  const brand = getBrandData(params.slug);
+  const brand = getBrandData(slug);
 
   // TODO:Mock products for this merchant
   const brandProducts = [

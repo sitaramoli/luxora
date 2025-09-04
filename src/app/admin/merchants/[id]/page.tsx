@@ -46,12 +46,13 @@ interface MerchantData {
 }
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-const Page: React.FC<Props> = ({ params }) => {
+const Page: React.FC<Props> = async ({ params }) => {
+  const { id } = await params;
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [merchantData, setMerchantData] = useState<MerchantData>({
@@ -154,7 +155,7 @@ const Page: React.FC<Props> = ({ params }) => {
                 </h1>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-gray-600">Merchant ID: {params.id}</span>
+                <span className="text-gray-600">Merchant ID: {id}</span>
                 <Badge
                   className={cn(
                     "capitalize",

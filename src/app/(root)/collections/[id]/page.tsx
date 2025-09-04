@@ -4,9 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import CollectionPageContent from "./CollectionPageContent";
 
 interface CollectionPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // TODO: Data fetching on the server
@@ -163,8 +163,9 @@ export async function generateStaticParams() {
 }
 
 // This is now a Server Component
-const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
-  const collection = getCollectionData(params.id);
+const CollectionPage: React.FC<CollectionPageProps> = async ({ params }) => {
+  const { id } = await params;
+  const collection = getCollectionData(id);
 
   return (
     <div className="min-h-screen bg-white">
