@@ -27,11 +27,29 @@ import {
   Upload,
   Eye,
   EyeOff,
+  RefreshCw,
+  Download,
+  Database,
+  Users,
+  AlertTriangle,
+  CheckCircle,
+  Settings,
+  Bell,
+  Shield,
+  Truck,
+  FileText
 } from "lucide-react";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import {
+  merchantActivityData,
+  miniChartData
+} from "@/constants/dashboard-data";
 
 const Page: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [storeSettings, setStoreSettings] = useState({
     // Store Information
@@ -100,7 +118,7 @@ const Page: React.FC = () => {
     setStoreSettings((prev) => ({
       ...prev,
       [section]: {
-        ...prev[section as keyof typeof prev],
+        ...(prev[section as keyof typeof prev] as any),
         [field]: value,
       },
     }));
@@ -113,10 +131,36 @@ const Page: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    // Here you would save it to your API
-    console.log("Saving store settings:", storeSettings);
-    setIsEditing(false);
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      // Here you would save it to your API
+      console.log("Saving store settings:", storeSettings);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportSettings = () => {
+    const dataStr = JSON.stringify(storeSettings, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'store-settings.json';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handleRefresh = () => {
+    setIsLoading(true);
+    // Simulate refresh
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -133,35 +177,92 @@ const Page: React.FC = () => {
                 Manage your store configuration and preferences
               </p>
             </div>
-            <Button
-              onClick={isEditing ? handleSave : () => setIsEditing(true)}
-              className={isEditing ? "bg-green-600 hover:bg-green-700" : ""}
-            >
-              {isEditing ? (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
-                </>
-              ) : (
-                "Edit Settings"
-              )}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button variant="outline" onClick={handleExportSettings}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Settings
+              </Button>
+              <Button
+                onClick={isEditing ? handleSave : () => setIsEditing(true)}
+                disabled={isLoading}
+                className={isEditing ? "bg-green-600 hover:bg-green-700" : ""}
+              >
+                {isEditing ? (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    {isLoading ? "Saving..." : "Save Changes"}
+                  </>
+                ) : (
+                  "Edit Settings"
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
-        <Tabs defaultValue="store" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="store">Store Info</TabsTrigger>
-            <TabsTrigger value="payment">Payment</TabsTrigger>
-            <TabsTrigger value="shipping">Shipping</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="policies">Policies</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
-          </TabsList>
+        {/* System Status Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Store Status"
+            value="Active"
+            change={0}
+            changeType="neutral"
+            icon={<CheckCircle className="h-5 w-5" />}
+            chartData={miniChartData.growth}
+            color="#10B981"
+            subtitle="Store is live"
+          />
+          <StatCard
+            title="Total Products"
+            value="247"
+            change={12.5}
+            changeType="positive"
+            icon={<Store className="h-5 w-5" />}
+            chartData={miniChartData.customers}
+            color="#3B82F6"
+            subtitle="Active products"
+          />
+          <StatCard
+            title="Monthly Orders"
+            value="1,234"
+            change={18.2}
+            changeType="positive"
+            icon={<Users className="h-5 w-5" />}
+            chartData={miniChartData.orders}
+            color="#8B5CF6"
+            subtitle="This month"
+          />
+          <StatCard
+            title="Store Rating"
+            value="4.9"
+            change={2.1}
+            changeType="positive"
+            icon={<CheckCircle className="h-5 w-5" />}
+            chartData={miniChartData.revenue}
+            color="#F59E0B"
+            subtitle="Customer rating"
+          />
+        </div>
 
-          <TabsContent value="store" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="store" className="w-full">
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="store">Store Info</TabsTrigger>
+                <TabsTrigger value="payment">Payment</TabsTrigger>
+                <TabsTrigger value="shipping">Shipping</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                <TabsTrigger value="policies">Policies</TabsTrigger>
+                <TabsTrigger value="advanced">Advanced</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="store" className="mt-6">
+                <div className="space-y-6">
                 {/* Basic Information */}
                 <Card>
                   <CardHeader>
@@ -442,9 +543,8 @@ const Page: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-          </TabsContent>
+                </div>
+              </TabsContent>
 
           <TabsContent value="payment" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -885,9 +985,20 @@ const Page: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Activity Sidebar */}
+          <div className="lg:col-span-1">
+            <ActivityFeed
+              activities={merchantActivityData}
+              title="Recent Activity"
+              onViewAll={() => console.log("View all activity")}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

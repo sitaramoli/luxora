@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -27,29 +27,45 @@ interface ProductCardProps {
   product: Product;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const handleAddToCart = (e: React.MouseEvent) => {
+const ProductCard: React.FC<ProductCardProps> = memo(({ product }) => {
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    //
-  };
+    // TODO: Implement add to cart functionality
+  }, []);
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    //
-  };
+    // TODO: Implement wishlist toggle functionality
+  }, []);
 
-  const discountPercentage = product.originalPrice
-    ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100,
-      )
-    : 0;
+  const discountPercentage = useMemo(() => {
+    return product.originalPrice
+      ? Math.round(
+          ((product.originalPrice - product.price) / product.originalPrice) * 100,
+        )
+      : 0;
+  }, [product.originalPrice, product.price]);
 
-  function isInWishlist(id: string) {
-    console.log("isInWishlist", id);
-    return true;
-  }
+  const isInWishlist = useCallback((id: string) => {
+    // TODO: Implement wishlist check
+    return false;
+  }, []);
+
+  const starRating = useMemo(() => {
+    return [...Array(5)].map((_, i) => (
+      <Star
+        key={i}
+        className={cn(
+          "h-3 w-3",
+          i < Math.floor(product.rating)
+            ? "text-yellow-400 fill-yellow-400"
+            : "text-gray-300",
+        )}
+      />
+    ));
+  }, [product.rating]);
 
   return (
     <Link href={`/products/${product.id}`}>
@@ -60,7 +76,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               src={product.image}
               alt={product.name}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              priority={false}
+              loading="lazy"
             />
 
             {/* Badges */}
@@ -117,17 +136,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
 
             <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={cn(
-                    "h-3 w-3",
-                    i < Math.floor(product.rating)
-                      ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-300",
-                  )}
-                />
-              ))}
+              {starRating}
               <span className="text-sm text-gray-500 ml-1">
                 ({product.reviewCount})
               </span>
@@ -150,6 +159,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </Card>
     </Link>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
 
 export default ProductCard;

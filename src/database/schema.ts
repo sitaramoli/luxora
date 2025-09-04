@@ -11,6 +11,7 @@ import {
   uuid,
   date,
   jsonb,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -51,7 +52,12 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-});
+}, (table) => ({
+  emailIdx: index("users_email_idx").on(table.email),
+  statusIdx: index("users_status_idx").on(table.status),
+  roleIdx: index("users_role_idx").on(table.role),
+  createdAtIdx: index("users_created_at_idx").on(table.createdAt),
+}));
 
 export const preferences = pgTable("preferences", {
   id: serial("id").notNull().primaryKey(),
@@ -120,7 +126,16 @@ export const products = pgTable("products", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-});
+}, (table) => ({
+  brandIdIdx: index("products_brand_id_idx").on(table.brandId),
+  featuredIdx: index("products_featured_idx").on(table.featured),
+  isSaleIdx: index("products_is_sale_idx").on(table.isSale),
+  isNewIdx: index("products_is_new_idx").on(table.isNew),
+  priceIdx: index("products_price_idx").on(table.price),
+  stockCountIdx: index("products_stock_count_idx").on(table.stockCount),
+  createdAtIdx: index("products_created_at_idx").on(table.createdAt),
+  nameIdx: index("products_name_idx").on(table.name),
+}));
 
 export const orders = pgTable("orders", {
   id: text("id").primaryKey().notNull(),
@@ -134,7 +149,12 @@ export const orders = pgTable("orders", {
   paymentId: text("payment_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index("orders_user_id_idx").on(table.userId),
+  statusIdx: index("orders_status_idx").on(table.status),
+  createdAtIdx: index("orders_created_at_idx").on(table.createdAt),
+  paymentIdIdx: index("orders_payment_id_idx").on(table.paymentId),
+}));
 
 export const orderItems = pgTable("order_items", {
   id: text("id").primaryKey().notNull(),

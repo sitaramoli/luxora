@@ -43,6 +43,13 @@
       "when": 1756746110717,
       "tag": "0005_flashy_vengeance",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1756775439994,
+      "tag": "0006_overjoyed_scarecrow",
+      "breakpoints": true
     }
   ]
 }

@@ -27,9 +27,25 @@ import {
   MapPin,
   Calendar,
   DollarSign,
+  RefreshCw,
+  TrendingUp,
+  MoreVertical,
+  User,
+  CreditCard,
+  Filter
 } from "lucide-react";
 import { getPaymentStatusColor } from "@/lib/utils";
 import { orders } from "@/constants/merchant-data";
+import { StatCard } from "@/components/dashboard/StatCard";
+import {
+  OrdersChart,
+  TopProductsChart
+} from "@/components/dashboard/ChartComponents";
+import {
+  ordersData,
+  topProductsData,
+  miniChartData
+} from "@/constants/dashboard-data";
 
 const getPaymentStatusIcon = (status: string) => {
   switch (status) {
@@ -52,6 +68,7 @@ const Page: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -67,12 +84,23 @@ const Page: React.FC = () => {
     // Here you would call your API to update the order status
   };
 
+  const handleRefresh = () => {
+    setIsLoading(true);
+    // Simulate refresh
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
+
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(
     (order) => order.status === "PENDING",
   ).length;
   const processingOrders = orders.filter(
     (order) => order.status === "PROCESSING",
+  ).length;
+  const completedOrders = orders.filter(
+    (order) => order.status === "DELIVERED",
   ).length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
 
@@ -81,72 +109,96 @@ const Page: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Order Management
-          </h1>
-          <p className="text-gray-600">Track and manage your customer orders</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Order Management
+              </h1>
+              <p className="text-gray-600">Track and manage your customer orders</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button>
+                <Download className="h-4 w-4 mr-2" />
+                Export Orders
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Orders"
+            value={totalOrders.toString()}
+            change={12.5}
+            changeType="positive"
+            icon={<Package className="h-5 w-5" />}
+            chartData={miniChartData.orders}
+            color="#3B82F6"
+            subtitle="All orders"
+          />
+          <StatCard
+            title="Pending Orders"
+            value={pendingOrders.toString()}
+            change={-8.2}
+            changeType="negative"
+            icon={<Clock className="h-5 w-5" />}
+            chartData={miniChartData.customers}
+            color="#F59E0B"
+            subtitle="Awaiting processing"
+          />
+          <StatCard
+            title="Completed Orders"
+            value={completedOrders.toString()}
+            change={18.5}
+            changeType="positive"
+            icon={<CheckCircle className="h-5 w-5" />}
+            chartData={miniChartData.growth}
+            color="#10B981"
+            subtitle="Successfully delivered"
+          />
+          <StatCard
+            title="Total Revenue"
+            value={`$${(totalRevenue / 1000).toFixed(0)}K`}
+            change={22.1}
+            changeType="positive"
+            icon={<DollarSign className="h-5 w-5" />}
+            chartData={miniChartData.revenue}
+            chartType="area"
+            color="#8B5CF6"
+            subtitle="From all orders"
+          />
+        </div>
+
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Orders Trend */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Orders
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {totalOrders}
-                  </p>
-                </div>
-                <Package className="h-8 w-8 text-gray-400" />
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Orders Trend
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <OrdersChart data={ordersData} />
             </CardContent>
           </Card>
+
+          {/* Top Products */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Pending Orders
-                  </p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {pendingOrders}
-                  </p>
-                </div>
-                <Clock className="h-8 w-8 text-yellow-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Processing
-                  </p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {processingOrders}
-                  </p>
-                </div>
-                <Truck className="h-8 w-8 text-blue-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Revenue
-                  </p>
-                  <p className="text-2xl font-bold text-green-600">
-                    ${totalRevenue.toLocaleString()}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-green-400" />
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Top Ordered Products
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TopProductsChart data={topProductsData} />
             </CardContent>
           </Card>
         </div>
@@ -159,50 +211,54 @@ const Page: React.FC = () => {
           </TabsList>
 
           <TabsContent value="orders" className="mt-6">
-            {/* Filters */}
+            {/* Enhanced Filters */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-4 items-center">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      type="text"
-                      placeholder="Search orders..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+                <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                  <div className="flex flex-col lg:flex-row gap-4 items-center flex-1">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        type="text"
+                        placeholder="Search orders by number or customer..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="PENDING">Pending</SelectItem>
+                        <SelectItem value="PROCESSING">Processing</SelectItem>
+                        <SelectItem value="SHIPPED">Shipped</SelectItem>
+                        <SelectItem value="DELIVERED">Delivered</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="PENDING">Pending</SelectItem>
-                      <SelectItem value="PROCESSING">Processing</SelectItem>
-                      <SelectItem value="SHIPPED">Shipped</SelectItem>
-                      <SelectItem value="DELIVERED">Delivered</SelectItem>
-                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline">
+                      <Filter className="h-4 w-4 mr-2" />
+                      More Filters
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Orders List */}
+            {/* Enhanced Orders List */}
             <div className="space-y-4">
               {filteredOrders.map((order) => (
-                <Card key={order.id}>
+                <Card key={order.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="text-xl font-semibold text-gray-900">
                             {order.orderNumber}
                           </h3>
                           <Badge
@@ -214,24 +270,57 @@ const Page: React.FC = () => {
                             </span>
                           </Badge>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <div>
+                              <p className="font-medium text-gray-900">{order.customer.name}</p>
+                              <p className="text-xs text-gray-500">{order.customer.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>
-                              {new Date(order.orderDate).toLocaleDateString()}
-                            </span>
+                            <div>
+                              <p className="font-medium">{new Date(order.orderDate).toLocaleDateString()}</p>
+                              <p className="text-xs text-gray-500">Order Date</p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Mail className="h-4 w-4" />
-                            <span>{order.customer.email}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4" />
-                            <span>${order.total.toLocaleString()}</span>
+                            <div>
+                              <p className="font-medium text-green-600">${order.total.toLocaleString()}</p>
+                              <p className="text-xs text-gray-500">Total Amount</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4" />
+                            <div>
+                              <p className="font-medium">{order.paymentStatus}</p>
+                              <p className="text-xs text-gray-500">Payment</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Order Items Preview */}
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-sm font-medium text-gray-700 mb-2">Order Items:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {order.products.slice(0, 3).map((product, index) => (
+                              <span key={index} className="text-xs bg-white px-2 py-1 rounded border">
+                                {product.name} (x{product.quantity})
+                              </span>
+                            ))}
+                            {order.products.length > 3 && (
+                              <span className="text-xs text-gray-500">
+                                +{order.products.length - 3} more items
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      
+                      <div className="flex flex-col gap-2 ml-4">
                         <Button
                           variant="outline"
                           size="sm"
@@ -244,21 +333,24 @@ const Page: React.FC = () => {
                           <Eye className="h-4 w-4 mr-2" />
                           {selectedOrder === order.id ? "Hide" : "View"} Details
                         </Button>
-                        {order.status === "pending" && (
+                        <Button variant="outline" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                        {order.status === "PENDING" && (
                           <Button
                             size="sm"
                             onClick={() =>
-                              handleStatusUpdate(order.id, "processing")
+                              handleStatusUpdate(order.id, "PROCESSING")
                             }
                           >
                             Process Order
                           </Button>
                         )}
-                        {order.status === "processing" && (
+                        {order.status === "PROCESSING" && (
                           <Button
                             size="sm"
                             onClick={() =>
-                              handleStatusUpdate(order.id, "shipped")
+                              handleStatusUpdate(order.id, "SHIPPED")
                             }
                           >
                             Mark as Shipped
