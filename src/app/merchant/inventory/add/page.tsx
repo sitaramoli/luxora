@@ -4,9 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -14,24 +11,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   Upload,
   X,
-  Plus,
   Save,
-  Eye,
   Image as ImageIcon,
   Package,
-  DollarSign,
   Tag,
+  Plus,
+  DollarSign,
+  Archive,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { addProduct, uploadImages } from "@/lib/services/products";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { NewProduct } from "@/database/schema";
+import { Switch } from "@/components/ui/switch";
 
 const AddProductPage: React.FC = () => {
-  const { data } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productData, setProductData] = useState({
@@ -39,7 +41,6 @@ const AddProductPage: React.FC = () => {
     description: "",
     shortDescription: "",
     category: "",
-    brand: data?.user?.name || "",
     price: "",
     originalPrice: "",
     sku: "",
@@ -50,7 +51,7 @@ const AddProductPage: React.FC = () => {
       width: "",
       height: "",
     },
-    stock: "",
+    stockCount: "",
     minStock: "",
     maxStock: "",
     status: "DRAFT",
@@ -59,17 +60,17 @@ const AddProductPage: React.FC = () => {
     colors: [] as { name: string; value: string }[],
     features: [] as string[],
     images: [] as string[],
-    seoTitle: "",
-    seoDescription: "",
-    seoKeywords: "",
+    onSale: false,
+    isFeatured: false,
   });
 
   const [newTag, setNewTag] = useState("");
   const [newSize, setNewSize] = useState("");
   const [newColor, setNewColor] = useState({ name: "", value: "#000000" });
   const [newFeature, setNewFeature] = useState("");
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     if (field.includes(".")) {
       const keys = field.split(".");
 
@@ -77,7 +78,6 @@ const AddProductPage: React.FC = () => {
         const updated = { ...prev };
         let current: any = updated;
 
-        // Navigate to the parent object
         for (let i = 0; i < keys.length - 1; i++) {
           const key = keys[i];
           if (
@@ -90,7 +90,6 @@ const AddProductPage: React.FC = () => {
           current = current[key];
         }
 
-        // Set the final value
         current[keys[keys.length - 1]] = value;
         return updated;
       });
@@ -170,19 +169,101 @@ const AddProductPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async (status: "DRAFT" | "ACTIVE") => {
+  const handleFileSelection = (files: FileList) => {
+    const newFiles = Array.from(files);
+    setSelectedImages((prev) => [...prev, ...newFiles]);
+  };
+
+  const removeImage = (index: number, isSelectedImage: boolean) => {
+    if (isSelectedImage) {
+      setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setProductData((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const handleSubmit = async (status: "ACTIVE" | "DRAFT" | "ARCHIVED") => {
     setIsSubmitting(true);
+    let uploadedImageUrls: string[] = [...productData.images];
+
+    if (selectedImages.length > 0) {
+      const formData = new FormData();
+      selectedImages.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      const uploadResult = await uploadImages(formData, productData.name);
+
+      if (!uploadResult.success || !uploadResult.urls) {
+        toast.error("Image Upload Failed", {
+          description: uploadResult.error || "Could not upload images.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      uploadedImageUrls.push(...uploadResult.urls);
+    }
+
     try {
-      // Here you would submit to your API
-      const submitData = { ...productData, status };
-      console.log("Submitting product:", submitData);
+      const preparedData: Omit<NewProduct, "merchantId"> = {
+        name: productData.name,
+        description: productData.description,
+        shortDescription: productData.shortDescription || null,
+        category: productData.category,
+        sku: productData.sku,
+        barcode: productData.barcode || null,
+        status: status,
+        // Convert strings from inputs to the correct data types
+        price: productData.price ? productData.price.toString() : "0.00",
+        originalPrice: productData.originalPrice
+          ? productData.originalPrice.toString()
+          : "0.00",
+        stockCount: parseInt(productData.stockCount, 10) || 0,
+        minStock: parseInt(productData.minStock, 10) || 0,
+        maxStock: parseInt(productData.maxStock, 10) || 0,
+        weight: productData.weight ? productData.weight.toString() : null,
+        // Flatten the dimension object
+        length: productData.dimensions.length
+          ? productData.dimensions.length.toString()
+          : null,
+        width: productData.dimensions.width
+          ? productData.dimensions.width.toString()
+          : null,
+        height: productData.dimensions.height
+          ? productData.dimensions.height.toString()
+          : null,
+        // Arrays and JSON
+        sizes: productData.sizes,
+        colors: productData.colors,
+        features: productData.features,
+        tags: productData.tags,
+        images: uploadedImageUrls,
+        // Booleans
+        onSale: productData.onSale,
+        isFeatured: productData.isFeatured,
+      };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // 3. Call the server action to create the product
+      const result = await addProduct(preparedData as NewProduct);
 
-      router.push("/merchant/inventory");
+      if (result.success) {
+        toast.success("Success", {
+          description: "Your new product is now live",
+        });
+        router.push("/merchant/inventory"); // Redirect on success
+      } else {
+        toast.error("Error", {
+          description: "Failed to Save Product",
+        });
+      }
     } catch (error) {
       console.error("Error submitting product:", error);
+      toast.error("Error", {
+        description: "An unexpected error occurred on the client.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -222,12 +303,11 @@ const AddProductPage: React.FC = () => {
           {/* Main Content */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="inventory">Inventory</TabsTrigger>
                 <TabsTrigger value="media">Media</TabsTrigger>
-                <TabsTrigger value="seo">SEO</TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="mt-6">
@@ -276,7 +356,7 @@ const AddProductPage: React.FC = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="shortDescription">
-                        Short Description
+                        Short Description (Optional)
                       </Label>
                       <Input
                         id="shortDescription"
@@ -310,6 +390,7 @@ const AddProductPage: React.FC = () => {
                           <Input
                             id="price"
                             type="number"
+                            min={0}
                             value={productData.price}
                             onChange={(e) =>
                               handleInputChange("price", e.target.value)
@@ -329,6 +410,7 @@ const AddProductPage: React.FC = () => {
                           <Input
                             id="originalPrice"
                             type="number"
+                            min={0}
                             value={productData.originalPrice}
                             onChange={(e) =>
                               handleInputChange("originalPrice", e.target.value)
@@ -337,6 +419,29 @@ const AddProductPage: React.FC = () => {
                             className="pl-10"
                           />
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="onSale">On Sale (Optional)</Label>
+                        <Switch
+                          checked={productData.onSale}
+                          onCheckedChange={(checked) =>
+                            handleInputChange("onSale", checked)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="isFeatured">
+                          Featured Product (Optional)
+                        </Label>
+                        <Switch
+                          checked={productData.isFeatured}
+                          onCheckedChange={(checked) =>
+                            handleInputChange("isFeatured", checked)
+                          }
+                        />
                       </div>
                     </div>
                   </CardContent>
@@ -354,14 +459,14 @@ const AddProductPage: React.FC = () => {
                       {/* Sizes */}
                       <div>
                         <Label className="text-sm font-medium mb-3 block">
-                          Sizes
+                          Sizes (Optional)
                         </Label>
                         <div className="flex gap-2 mb-3">
                           <Input
                             value={newSize}
                             onChange={(e) => setNewSize(e.target.value)}
                             placeholder="Add size (e.g., S, M, L)"
-                            onKeyPress={(e) => e.key === "Enter" && addSize()}
+                            onKeyDown={(e) => e.key === "Enter" && addSize()}
                           />
                           <Button onClick={addSize} type="button">
                             <Plus className="h-4 w-4" />
@@ -387,7 +492,7 @@ const AddProductPage: React.FC = () => {
                       {/* Colors */}
                       <div>
                         <Label className="text-sm font-medium mb-3 block">
-                          Colors
+                          Colors (Optional)
                         </Label>
                         <div className="flex gap-2 mb-3">
                           <Input
@@ -428,7 +533,7 @@ const AddProductPage: React.FC = () => {
                               />
                               {color.name}
                               <X
-                                className="h-3 w-3 cursor-pointer"
+                                className="h-3 w-3 cursor-pointer text-gray-500 hover:text-red-500"
                                 onClick={() => removeColor(color)}
                               />
                             </Badge>
@@ -439,16 +544,14 @@ const AddProductPage: React.FC = () => {
                       {/* Features */}
                       <div>
                         <Label className="text-sm font-medium mb-3 block">
-                          Product Features
+                          Product Features *
                         </Label>
                         <div className="flex gap-2 mb-3">
                           <Input
                             value={newFeature}
                             onChange={(e) => setNewFeature(e.target.value)}
                             placeholder="Add product feature"
-                            onKeyPress={(e) =>
-                              e.key === "Enter" && addFeature()
-                            }
+                            onKeyDown={(e) => e.key === "Enter" && addFeature()}
                           />
                           <Button onClick={addFeature} type="button">
                             <Plus className="h-4 w-4" />
@@ -480,7 +583,7 @@ const AddProductPage: React.FC = () => {
                     <CardContent className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="sku">SKU</Label>
+                          <Label htmlFor="sku">SKU *</Label>
                           <Input
                             id="sku"
                             value={productData.sku}
@@ -491,7 +594,7 @@ const AddProductPage: React.FC = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="barcode">Barcode</Label>
+                          <Label htmlFor="barcode">Barcode (Optional)</Label>
                           <Input
                             id="barcode"
                             value={productData.barcode}
@@ -504,10 +607,11 @@ const AddProductPage: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="weight">Weight (kg)</Label>
+                        <Label htmlFor="weight">Weight (kg) (Optional)</Label>
                         <Input
                           id="weight"
                           type="number"
+                          min={0}
                           value={productData.weight}
                           onChange={(e) =>
                             handleInputChange("weight", e.target.value)
@@ -523,10 +627,11 @@ const AddProductPage: React.FC = () => {
                         </Label>
                         <div className="grid grid-cols-3 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="length">Length</Label>
+                            <Label htmlFor="length">Length (Optional)</Label>
                             <Input
                               id="length"
                               type="number"
+                              min={0}
                               value={productData.dimensions.length}
                               onChange={(e) =>
                                 handleInputChange(
@@ -538,10 +643,11 @@ const AddProductPage: React.FC = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="width">Width</Label>
+                            <Label htmlFor="width">Width (Optional)</Label>
                             <Input
                               id="width"
                               type="number"
+                              min={0}
                               value={productData.dimensions.width}
                               onChange={(e) =>
                                 handleInputChange(
@@ -553,10 +659,11 @@ const AddProductPage: React.FC = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="height">Height</Label>
+                            <Label htmlFor="height">Height (Optional)</Label>
                             <Input
                               id="height"
                               type="number"
+                              min={0}
                               value={productData.dimensions.height}
                               onChange={(e) =>
                                 handleInputChange(
@@ -582,22 +689,24 @@ const AddProductPage: React.FC = () => {
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="stock">Current Stock *</Label>
+                        <Label htmlFor="stockCount">Current Stock *</Label>
                         <Input
-                          id="stock"
+                          id="stockCount"
+                          min={0}
                           type="number"
-                          value={productData.stock}
+                          value={productData.stockCount}
                           onChange={(e) =>
-                            handleInputChange("stock", e.target.value)
+                            handleInputChange("stockCount", e.target.value)
                           }
                           placeholder="0"
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="minStock">Minimum Stock Alert</Label>
+                        <Label htmlFor="minStock">Minimum Stock Alert *</Label>
                         <Input
                           id="minStock"
+                          min={0}
                           type="number"
                           value={productData.minStock}
                           onChange={(e) =>
@@ -607,10 +716,11 @@ const AddProductPage: React.FC = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="maxStock">Maximum Stock</Label>
+                        <Label htmlFor="maxStock">Maximum Stock *</Label>
                         <Input
                           id="maxStock"
                           type="number"
+                          min={0}
                           value={productData.maxStock}
                           onChange={(e) =>
                             handleInputChange("maxStock", e.target.value)
@@ -622,14 +732,14 @@ const AddProductPage: React.FC = () => {
 
                     <div>
                       <Label className="text-sm font-medium mb-3 block">
-                        Tags
+                        Tags (Optional)
                       </Label>
                       <div className="flex gap-2 mb-3">
                         <Input
                           value={newTag}
                           onChange={(e) => setNewTag(e.target.value)}
                           placeholder="Add tag"
-                          onKeyPress={(e) => e.key === "Enter" && addTag()}
+                          onKeyDown={(e) => e.key === "Enter" && addTag()}
                         />
                         <Button onClick={addTag} type="button">
                           <Plus className="h-4 w-4" />
@@ -659,81 +769,89 @@ const AddProductPage: React.FC = () => {
               <TabsContent value="media" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Product Images</CardTitle>
+                    <CardTitle>Product Images *</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                      <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Upload Product Images
-                      </h3>
-                      <p className="text-gray-600 mb-4">
-                        Drag and drop images here, or click to browse
-                      </p>
-                      <Button variant="outline">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Choose Files
-                      </Button>
+                      <label
+                        htmlFor="productImages"
+                        className={`cursor-pointer flex flex-col items-center ${
+                          isSubmitting ? "opacity-50 pointer-events-none" : ""
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          id="productImages"
+                          multiple
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            e.target.files &&
+                            handleFileSelection(e.target.files)
+                          }
+                          disabled={isSubmitting}
+                        />
+                        <ImageIcon className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          Upload Product Images
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          Drag and drop images here, or click to browse
+                        </p>
+                        <div className="px-4 py-2 flex items-center justify-center border-2 border-gray-300 rounded-md">
+                          <Upload className="h-4 w-4 mr-2" />
+                          <p>Choose Files</p>
+                        </div>
+                      </label>
                       <p className="text-xs text-gray-500 mt-2">
                         Supported formats: JPG, PNG, WebP. Max size: 5MB per
                         image.
                       </p>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
-              <TabsContent value="seo" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>SEO Optimization</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="seoTitle">SEO Title</Label>
-                      <Input
-                        id="seoTitle"
-                        value={productData.seoTitle}
-                        onChange={(e) =>
-                          handleInputChange("seoTitle", e.target.value)
-                        }
-                        placeholder="SEO optimized title"
-                      />
-                      <p className="text-xs text-gray-500">
-                        Recommended: 50-60 characters
-                      </p>
-                    </div>
+                    {/* Preview previously uploaded images */}
+                    {productData.images.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+                        {productData.images.map((imgUrl, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={imgUrl}
+                              alt={`Uploaded ${index}`}
+                              className="w-full h-40 object-cover rounded-lg border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index, false)}
+                              className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="seoDescription">Meta Description</Label>
-                      <Textarea
-                        id="seoDescription"
-                        value={productData.seoDescription}
-                        onChange={(e) =>
-                          handleInputChange("seoDescription", e.target.value)
-                        }
-                        placeholder="SEO meta description"
-                        rows={3}
-                      />
-                      <p className="text-xs text-gray-500">
-                        Recommended: 150-160 characters
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="seoKeywords">Keywords</Label>
-                      <Input
-                        id="seoKeywords"
-                        value={productData.seoKeywords}
-                        onChange={(e) =>
-                          handleInputChange("seoKeywords", e.target.value)
-                        }
-                        placeholder="keyword1, keyword2, keyword3"
-                      />
-                      <p className="text-xs text-gray-500">
-                        Separate keywords with commas
-                      </p>
-                    </div>
+                    {/* Preview selected new files */}
+                    {selectedImages.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+                        {selectedImages.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Selected ${index}`}
+                              className="w-full h-40 object-cover rounded-lg border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index, true)}
+                              className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -743,30 +861,6 @@ const AddProductPage: React.FC = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="space-y-6">
-              {/* Product Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Product Status</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select
-                    value={productData.status}
-                    onValueChange={(value) =>
-                      handleInputChange("status", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DRAFT">Draft</SelectItem>
-                      <SelectItem value="ACTIVE">Active</SelectItem>
-                      <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
-
               {/* Actions */}
               <Card>
                 <CardHeader>
@@ -783,6 +877,15 @@ const AddProductPage: React.FC = () => {
                     Save as Draft
                   </Button>
                   <Button
+                    onClick={() => handleSubmit("ARCHIVED")}
+                    variant="outline"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    <Archive className="h-4 w-4 mr-2" />
+                    Save as Archive
+                  </Button>
+                  <Button
                     onClick={() => handleSubmit("ACTIVE")}
                     className="w-full bg-black text-white hover:bg-gray-800"
                     disabled={isSubmitting}
@@ -790,24 +893,6 @@ const AddProductPage: React.FC = () => {
                     <Package className="h-4 w-4 mr-2" />
                     {isSubmitting ? "Publishing..." : "Publish Product"}
                   </Button>
-                  <Button variant="outline" className="w-full">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Preview
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Quick Tips */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Tips</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-gray-600 space-y-2">
-                  <p>• Use high-quality images for better conversion</p>
-                  <p>• Write detailed descriptions with key features</p>
-                  <p>• Set competitive pricing based on market research</p>
-                  <p>• Use relevant tags for better discoverability</p>
-                  <p>• Keep inventory levels updated</p>
                 </CardContent>
               </Card>
             </div>

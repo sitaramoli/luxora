@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import {
   Search,
@@ -21,42 +20,37 @@ import {
   TrendingUp,
   Package,
   Plus,
-  Minus,
   BarChart3,
   Download,
   Upload,
   RefreshCw,
   Eye,
-  MoreVertical,
-  Calendar,
   Tag,
   Store,
-  Clock,
   DollarSign,
-  ShoppingCart,
-  Star
+  MoreHorizontal,
 } from "lucide-react";
 import { inventoryData } from "@/constants/merchant-data";
 import { getProductStatusColor } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { miniChartData } from "@/constants/dashboard-data";
 import {
-  SalesDistributionChart,
-  TopProductsChart
-} from "@/components/dashboard/ChartComponents";
-import {
-  salesDistributionData,
-  topProductsData,
-  miniChartData
-} from "@/constants/dashboard-data";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@radix-ui/react-menu";
+import { Progress } from "@/components/ui/progress";
 
 const Page: React.FC = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [editedStock, setEditedStock] = useState<{ [key: string]: number }>({});
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -90,18 +84,13 @@ const Page: React.FC = () => {
     (item) => item.status === "LOW_STOCK" || item.status === "OUT_OF_STOCK",
   ).length;
   const totalProducts = inventoryData.length;
-  const avgStockLevel =
-    inventoryData.reduce((sum, item) => sum + item.currentStock, 0) /
-    totalProducts;
-  const totalRevenue = inventoryData.reduce((sum, item) => sum + item.revenue30Days, 0);
+  const totalRevenue = inventoryData.reduce(
+    (sum, item) => sum + item.revenue30Days,
+    0,
+  );
 
   const handleStockUpdate = (productId: string, newStock: number) => {
-    // Here you would update the stock via API
     console.log(`Updating stock for ${productId} to ${newStock}`);
-  };
-
-  const handleBulkAction = (action: string) => {
-    console.log(`Performing ${action} on products:`, selectedProducts);
   };
 
   const handleRefresh = () => {
@@ -127,8 +116,14 @@ const Page: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={isLoading}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+                />
                 Refresh
               </Button>
               <Button onClick={() => router.push("/merchant/inventory/add")}>
@@ -184,394 +179,238 @@ const Page: React.FC = () => {
           />
         </div>
 
-        {/* Analytics Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Inventory Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Inventory Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SalesDistributionChart data={salesDistributionData} />
-            </CardContent>
-          </Card>
-
-          {/* Top Performing Products */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5" />
-                Top Performing Products
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TopProductsChart data={topProductsData} />
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="inventory" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="inventory">Inventory List</TabsTrigger>
-            <TabsTrigger value="alerts">Stock Alerts</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="inventory" className="mt-6">
-            {/* Enhanced Filters and Actions */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-                  <div className="flex flex-col lg:flex-row gap-4 items-center flex-1">
-                    <div className="relative flex-1 max-w-md">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <Input
-                        type="text"
-                        placeholder="Search products by name or SKU..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                    <Select
-                      value={statusFilter}
-                      onValueChange={setStatusFilter}
-                    >
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="IN_STOCK">In Stock</SelectItem>
-                        <SelectItem value="LOW_STOCK">Low Stock</SelectItem>
-                        <SelectItem value="OUT_OF_STOCK">
-                          Out of Stock
-                        </SelectItem>
-                        <SelectItem value="OVER_STOCK">Overstock</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={categoryFilter}
-                      onValueChange={setCategoryFilter}
-                    >
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="Filter by category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="dresses">Dresses</SelectItem>
-                        <SelectItem value="bags">Bags</SelectItem>
-                        <SelectItem value="accessories">Accessories</SelectItem>
-                        <SelectItem value="outerwear">Outerwear</SelectItem>
-                      </SelectContent>
-                    </Select>
+        <div className="mt-6">
+          {/* Enhanced Filters and Actions */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div className="flex flex-col lg:flex-row gap-4 items-center flex-1">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      type="text"
+                      placeholder="Search products by name or SKU..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Import
-                    </Button>
-                    <Button variant="outline">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
-                  </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="IN_STOCK">In Stock</SelectItem>
+                      <SelectItem value="LOW_STOCK">Low Stock</SelectItem>
+                      <SelectItem value="OUT_OF_STOCK">Out of Stock</SelectItem>
+                      <SelectItem value="OVER_STOCK">Overstock</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                  >
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Filter by category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="dresses">Dresses</SelectItem>
+                      <SelectItem value="bags">Bags</SelectItem>
+                      <SelectItem value="accessories">Accessories</SelectItem>
+                      <SelectItem value="outerwear">Outerwear</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                <div className="flex gap-2">
+                  <Button variant="outline">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import
+                  </Button>
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                {selectedProducts.length > 0 && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-blue-800">
-                        {selectedProducts.length} product(s) selected
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleBulkAction("update_stock")}
+          {/* Enhanced Inventory List */}
+          <div className="space-y-4">
+            {filteredInventory.map((item) => (
+              <Card
+                key={item.id}
+                className="w-full transition-all hover:shadow-lg bg-white border border-slate-200"
+              >
+                <CardContent className="p-4 md:p-6 grid grid-cols-[auto_1fr] gap-6 items-start">
+                  <div className="w-24 h-24 relative rounded-xl overflow-hidden bg-slate-100">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-800">
+                          {item.name}
+                        </h3>
+                        <Badge
+                          className={`mt-1.5 ${getProductStatusColor(item.status)}`}
                         >
-                          Update Stock
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleBulkAction("export")}
-                        >
-                          Export Selected
-                        </Button>
+                          {getStatusIcon(item.status)}
+                          <span className="ml-1.5">
+                            {item.status.split("_").join(" ")}
+                          </span>
+                        </Badge>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreHorizontal className="h-5 w-5 text-slate-500" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>View Details</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Edit Item</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 mt-1">
+                      <div className="flex items-center gap-1.5">
+                        <Tag className="h-4 w-4" />
+                        <span>SKU: {item.sku}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Package className="h-4 w-4" />
+                        <span>{item.category}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Store className="h-4 w-4" />
+                        <span>{item.supplier}</span>
                       </div>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
-            {/* Enhanced Inventory List */}
-            <div className="space-y-4">
-              {filteredInventory.map((item) => (
-                <Card key={item.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-6">
-                      <input
-                        type="checkbox"
-                        checked={selectedProducts.includes(item.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedProducts([...selectedProducts, item.id]);
-                          } else {
-                            setSelectedProducts(
-                              selectedProducts.filter((id) => id !== item.id),
-                            );
-                          }
-                        }}
-                        className="h-4 w-4 mt-2"
-                      />
-
-                      <div className="w-20 h-20 relative rounded-lg overflow-hidden bg-gray-100">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
+                    <Separator className="my-4" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <p className="text-sm font-medium text-slate-600">
+                            Stock Level
+                          </p>
+                          <span className="text-lg font-bold text-slate-900">
+                            {item.currentStock}
+                          </span>
+                        </div>
+                        <Progress
+                          value={(item.currentStock / item.maxStock) * 100}
+                          className="h-2"
                         />
+
+                        <div className="flex items-center justify-between mt-1.5">
+                          <p className="text-xs text-slate-500">
+                            Min: {item.minStock}
+                          </p>
+
+                          {/* Editable Stock Input + Save */}
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={editedStock[item.id] ?? item.currentStock}
+                              min={0}
+                              max={item.maxStock}
+                              className="w-20 px-2 py-1 text-sm border rounded-md focus:ring-2 focus:ring-blue-500"
+                              onChange={(e) =>
+                                setEditedStock({
+                                  ...editedStock,
+                                  [item.id]: Number(e.target.value),
+                                })
+                              }
+                            />
+                            <Button
+                              size="sm"
+                              variant="default"
+                              disabled={
+                                item.currentStock === editedStock[item.id] ||
+                                !editedStock[item.id]
+                              }
+                              onClick={() =>
+                                handleStockUpdate(
+                                  item.id,
+                                  editedStock[item.id] ?? item.currentStock,
+                                )
+                              }
+                            >
+                              Save
+                            </Button>
+                          </div>
+
+                          <p className="text-xs text-slate-500">
+                            Max: {item.maxStock}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {item.name}
-                              </h3>
-                              <Badge className={getProductStatusColor(item.status)}>
-                                {getStatusIcon(item.status)}
-                                <span className="ml-1">
-                                  {item.status.split("_").join(" ")}
-                                </span>
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                              <div className="flex items-center gap-1">
-                                <Tag className="h-4 w-4" />
-                                <span>SKU: {item.sku}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Store className="h-4 w-4" />
-                                <span>{item.category}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>{item.location}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Package className="h-4 w-4" />
-                                <span>{item.supplier}</span>
-                              </div>
-                            </div>
+                      {/* Financial Info */}
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">
+                              Stock Value
+                            </span>
+                            <span className="font-semibold">
+                              ${item.stockValue.toLocaleString()}
+                            </span>
                           </div>
-                          <Button variant="outline" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          {/* Stock Management */}
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-medium text-gray-600">
-                                Stock Level
-                              </p>
-                              <span className="text-lg font-bold text-gray-900">
-                                {item.currentStock}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  handleStockUpdate(item.id, item.currentStock - 1)
-                                }
-                                disabled={item.currentStock <= 0}
-                              >
-                                <Minus className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  handleStockUpdate(item.id, item.currentStock + 1)
-                                }
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            </div>
-                            <p className="text-xs text-gray-500">
-                              Min: {item.minStock} | Max: {item.maxStock}
-                            </p>
-                          </div>
-
-                          {/* Financial Info */}
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Stock Value</span>
-                                <span className="font-semibold">
-                                  ${item.stockValue.toLocaleString()}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Cost</span>
-                                <span className="text-sm">${item.cost}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Sales Performance */}
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">30-Day Sales</span>
-                                <span className="font-semibold">{item.sales30Days}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Revenue</span>
-                                <span className="text-sm text-green-600">
-                                  ${item.revenue30Days.toLocaleString()}
-                                </span>
-                              </div>
-                            </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">Cost</span>
+                            <span className="text-sm">${item.cost}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="alerts" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Stock Alerts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {inventoryData
-                    .filter(
-                      (item) =>
-                        item.status === "LOW_STOCK" ||
-                        item.status === "OUT_OF_STOCK",
-                    )
-                    .map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200"
-                      >
-                        <div className="flex items-center gap-4">
-                          <AlertTriangle className="h-5 w-5 text-red-500" />
-                          <div>
-                            <h4 className="font-medium text-gray-900">
-                              {item.name}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              Current stock: {item.currentStock} | Minimum:{" "}
-                              {item.minStock}
-                            </p>
+                      {/* Sales Performance */}
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">
+                              30-Day Sales
+                            </span>
+                            <span className="font-semibold">
+                              {item.sales30Days}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">
+                              Revenue
+                            </span>
+                            <span className="text-sm text-green-600">
+                              ${item.revenue30Days.toLocaleString()}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            Reorder
-                          </Button>
-                          <Button size="sm">Update Stock</Button>
-                        </div>
                       </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="reports" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Inventory Turnover</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">
-                        Average Turnover Rate
-                      </span>
-                      <span className="font-semibold">2.4x</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Days in Inventory</span>
-                      <span className="font-semibold">152 days</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Fast Moving Items</span>
-                      <span className="font-semibold">8</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Slow Moving Items</span>
-                      <span className="font-semibold">3</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Stock Valuation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Stock Value</span>
-                      <span className="font-semibold">
-                        ${totalStockValue.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Dead Stock Value</span>
-                      <span className="font-semibold text-red-600">$5,250</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Overstock Value</span>
-                      <span className="font-semibold text-blue-600">
-                        $28,350
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Healthy Stock Value</span>
-                      <span className="font-semibold text-green-600">
-                        $47,850
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

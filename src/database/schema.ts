@@ -12,8 +12,8 @@ import {
   date,
   jsonb,
   index,
+  numeric,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 
 export const ACCOUNT_STATUS_ENUM = pgEnum("account_status", [
   "ACTIVE",
@@ -38,6 +38,12 @@ export const USER_ROLE_ENUM = pgEnum("user_role", [
 
 export const GENDER_ENUM = pgEnum("gender", ["MALE", "FEMALE", "OTHER"]);
 
+export const PRODUCT_STATUS_ENUM = pgEnum("product_status", [
+  "ACTIVE",
+  "DRAFT",
+  "ARCHIVED",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
   fullName: varchar("full_name", { length: 255 }).notNull(),
@@ -48,16 +54,90 @@ export const users = pgTable("users", {
   role: USER_ROLE_ENUM("role").notNull().default("CUSTOMER"),
   image: text("image"),
   gender: GENDER_ENUM("gender").notNull().default("MALE"),
-  lastActivityDate: date("last_activity_date").notNull().defaultNow(),
+  lastActivityDate: timestamp("last_activity_date", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-}, (table) => ({
-  emailIdx: index("users_email_idx").on(table.email),
-  statusIdx: index("users_status_idx").on(table.status),
-  roleIdx: index("users_role_idx").on(table.role),
-  createdAtIdx: index("users_created_at_idx").on(table.createdAt),
-}));
+});
+
+export const merchants = pgTable("merchants", {
+  id: uuid("id").notNull().unique().defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  shortDescription: text("short_description").notNull(),
+  category: varchar("category", { length: 255 }).notNull(),
+  coverImage: text("cover_image").notNull(),
+  image: text("image").notNull(),
+  address: text("address").notNull(),
+  taxId: varchar("tax_id", { length: 20 }).notNull(),
+  founded: date("founded").notNull(),
+  status: ACCOUNT_STATUS_ENUM("status").notNull().default("PENDING"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const products = pgTable("products", {
+  id: serial("id").notNull().primaryKey(),
+  merchantId: uuid("merchant_id")
+    .notNull()
+    .references(() => merchants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  shortDescription: text("short_description"),
+  description: text("description").notNull(),
+  category: varchar("category", { length: 255 }).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0.00"),
+  originalPrice: decimal("original_price", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0.00"),
+  sizes: text("sizes").array(),
+  colors: jsonb("colors").$type<Array<Record<string, any>>>(),
+  features: text("features").array().notNull(),
+  sku: varchar("sku").notNull(),
+  barcode: varchar("barcode"),
+  weight: numeric("weight", { precision: 10, scale: 2 }),
+  length: numeric("length", { precision: 10, scale: 2 }),
+  width: numeric("width", { precision: 10, scale: 2 }),
+  height: numeric("height", { precision: 10, scale: 2 }),
+  status: PRODUCT_STATUS_ENUM("status").notNull().default("ACTIVE"),
+  stockCount: integer("stock_count").notNull().default(0),
+  minStock: integer("min_stock").notNull().default(0),
+  maxStock: integer("max_stock").notNull().default(0),
+  tags: text("tags").array(),
+  images: text("images").array(),
+  isFeatured: boolean("is_featured").notNull().default(false),
+  onSale: boolean("on_sale").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type NewProduct = typeof products.$inferInsert;
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  image: text("image"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 export const preferences = pgTable("preferences", {
   id: serial("id").notNull().primaryKey(),
@@ -67,94 +147,28 @@ export const preferences = pgTable("preferences", {
   preferenceValues: text("preference_values").array().notNull().default([]),
 });
 
-export const merchants = pgTable("merchants", {
-  id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  name: varchar("name", { length: 255 }).notNull(),
-  slug: varchar("slug", { length: 255 }).notNull().unique(),
-  description: text("description").notNull(),
-  about: text("about").notNull(),
-  category: varchar("category", { length: 255 }).notNull(),
-  coverPhoto: text("cover_photo").notNull(),
-  logo: text("logo").notNull(),
-  address: text("address").notNull(),
-  phone: varchar("phone", { length: 20 }).notNull(),
-  email: varchar("email", { length: 255 }).notNull(),
-  isVerified: boolean("is_verified").notNull().default(false),
-  founded: date("founded").notNull(),
-  status: ACCOUNT_STATUS_ENUM("status").notNull().default("PENDING"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
-
-export const categories = pgTable("categories", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  image: text("image"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const products = pgTable("products", {
-  id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
-  brandId: uuid("brand_id")
-    .notNull()
-    .references(() => merchants.id, { onDelete: "cascade" }),
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description").notNull(),
-  features: text("features").array().notNull(),
-  price: decimal("price", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0.00"),
-  originalPrice: decimal("original_price", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0.00"),
-  colors: jsonb("colors").$type<Array<Record<string, any>>>(),
-  images: text("images").array(),
-  sizes: text("sizes").array(),
-  stockCount: integer("stock_count").notNull().default(0),
-  featured: boolean("featured").notNull().default(false),
-  isSale: boolean("is_sale").notNull().default(false),
-  isNew: boolean("is_new").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-}, (table) => ({
-  brandIdIdx: index("products_brand_id_idx").on(table.brandId),
-  featuredIdx: index("products_featured_idx").on(table.featured),
-  isSaleIdx: index("products_is_sale_idx").on(table.isSale),
-  isNewIdx: index("products_is_new_idx").on(table.isNew),
-  priceIdx: index("products_price_idx").on(table.price),
-  stockCountIdx: index("products_stock_count_idx").on(table.stockCount),
-  createdAtIdx: index("products_created_at_idx").on(table.createdAt),
-  nameIdx: index("products_name_idx").on(table.name),
-}));
-
-export const orders = pgTable("orders", {
-  id: text("id").primaryKey().notNull(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id),
-  total: decimal("total").notNull(),
-  status: ORDER_STATUS_ENUM("status").default("PENDING").notNull(),
-  shippingAddress: text("shipping_address").notNull(),
-  paymentMethod: text("payment_method"),
-  paymentId: text("payment_id"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => ({
-  userIdIdx: index("orders_user_id_idx").on(table.userId),
-  statusIdx: index("orders_status_idx").on(table.status),
-  createdAtIdx: index("orders_created_at_idx").on(table.createdAt),
-  paymentIdIdx: index("orders_payment_id_idx").on(table.paymentId),
-}));
+export const orders = pgTable(
+  "orders",
+  {
+    id: text("id").primaryKey().notNull(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    total: decimal("total").notNull(),
+    status: ORDER_STATUS_ENUM("status").default("PENDING").notNull(),
+    shippingAddress: text("shipping_address").notNull(),
+    paymentMethod: text("payment_method"),
+    paymentId: text("payment_id"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("orders_user_id_idx").on(table.userId),
+    statusIdx: index("orders_status_idx").on(table.status),
+    createdAtIdx: index("orders_created_at_idx").on(table.createdAt),
+    paymentIdIdx: index("orders_payment_id_idx").on(table.paymentId),
+  }),
+);
 
 export const orderItems = pgTable("order_items", {
   id: text("id").primaryKey().notNull(),
@@ -226,85 +240,3 @@ export const reviews = pgTable("reviews", {
   private: boolean("private").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
-
-export const usersRelations = relations(users, ({ one, many }) => ({
-  brand: one(merchants, {
-    fields: [users.id],
-    references: [merchants.userId],
-  }),
-  orders: many(orders),
-  carts: many(carts),
-  wishlists: many(wishlists),
-  reviews: many(reviews),
-}));
-
-export const brandsRelations = relations(merchants, ({ one, many }) => ({
-  user: one(users, { fields: [merchants.userId], references: [users.id] }),
-  products: many(products),
-  orders: many(orderItems),
-}));
-
-export const productsRelations = relations(products, ({ one, many }) => ({
-  brand: one(merchants, {
-    fields: [products.brandId],
-    references: [merchants.id],
-  }),
-  orderItems: many(orderItems),
-  cartItems: many(cartItems),
-  wishlistItems: many(wishlistItems),
-  reviews: many(reviews),
-}));
-
-export const ordersRelations = relations(orders, ({ one, many }) => ({
-  user: one(users, { fields: [orders.userId], references: [users.id] }),
-  orderItems: many(orderItems),
-}));
-
-export const orderItemsRelations = relations(orderItems, ({ one }) => ({
-  order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
-  product: one(products, {
-    fields: [orderItems.productId],
-    references: [products.id],
-  }),
-  brand: one(merchants, {
-    fields: [orderItems.brandId],
-    references: [merchants.id],
-  }),
-}));
-
-export const cartsRelations = relations(carts, ({ one, many }) => ({
-  user: one(users, { fields: [carts.userId], references: [users.id] }),
-  cartItems: many(cartItems),
-}));
-
-export const cartItemsRelations = relations(cartItems, ({ one }) => ({
-  cart: one(carts, { fields: [cartItems.cartId], references: [carts.id] }),
-  product: one(products, {
-    fields: [cartItems.productId],
-    references: [products.id],
-  }),
-}));
-
-export const wishlistsRelations = relations(wishlists, ({ one, many }) => ({
-  user: one(users, { fields: [wishlists.userId], references: [users.id] }),
-  wishlistItems: many(wishlistItems),
-}));
-
-export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
-  wishlist: one(wishlists, {
-    fields: [wishlistItems.wishlistId],
-    references: [wishlists.id],
-  }),
-  product: one(products, {
-    fields: [wishlistItems.productId],
-    references: [products.id],
-  }),
-}));
-
-export const reviewsRelations = relations(reviews, ({ one }) => ({
-  user: one(users, { fields: [reviews.userId], references: [users.id] }),
-  product: one(products, {
-    fields: [reviews.productId],
-    references: [products.id],
-  }),
-}));

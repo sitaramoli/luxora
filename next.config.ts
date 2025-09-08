@@ -26,6 +26,9 @@ const nextConfig: NextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
   },
   turbopack: {
     rules: {
