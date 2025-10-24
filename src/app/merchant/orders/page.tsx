@@ -1,18 +1,5 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search,
   Eye,
@@ -32,32 +19,55 @@ import {
   MoreVertical,
   User,
   CreditCard,
-  Filter
-} from "lucide-react";
-import { getPaymentStatusColor } from "@/lib/utils";
-import { orders } from "@/constants/merchant-data";
-import { StatCard } from "@/components/dashboard/StatCard";
+  Filter,
+  X,
+} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+
 import {
   OrdersChart,
-  TopProductsChart
-} from "@/components/dashboard/ChartComponents";
+  TopProductsChart,
+} from '@/components/dashboard/ChartComponents';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { PageLoader } from '@/components/PageLoader';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ordersData,
   topProductsData,
-  miniChartData
-} from "@/constants/dashboard-data";
+  miniChartData,
+} from '@/constants/dashboard-data';
+import {
+  getMerchantOrdersAction,
+  getMerchantOrderStatsAction,
+  updateOrderStatusAction,
+  exportOrdersAction,
+} from '@/lib/actions/merchant-orders';
+import { getPaymentStatusColor } from '@/lib/utils';
 
 const getPaymentStatusIcon = (status: string) => {
-  switch (status) {
-    case "PENDING":
+  switch (status?.toUpperCase()) {
+    case 'PENDING':
       return <Clock className="h-4 w-4" />;
-    case "PROCESSING":
+    case 'PROCESSING':
       return <Package className="h-4 w-4" />;
-    case "SHIPPED":
+    case 'SHIPPED':
       return <Truck className="h-4 w-4" />;
-    case "DELIVERED":
+    case 'DELIVERED':
       return <CheckCircle className="h-4 w-4" />;
-    case "CANCELLED":
+    case 'CANCELLED':
+    case 'REFUNDED':
       return <AlertCircle className="h-4 w-4" />;
     default:
       return <Package className="h-4 w-4" />;
@@ -65,44 +75,132 @@ const getPaymentStatusIcon = (status: string) => {
 };
 
 const Page: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingOrders: 0,
+    processingOrders: 0,
+    shippedOrders: 0,
+    deliveredOrders: 0,
+    cancelledOrders: 0,
   });
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateFilter, setDateFilter] = useState({ startDate: '', endDate: '' });
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
 
-  const handleStatusUpdate = (orderId: string, newStatus: string) => {
-    console.log(`Updating order ${orderId} status to ${newStatus}`);
-    // Here you would call your API to update the order status
+  const loadOrders = async () => {
+    setIsLoading(true);
+    try {
+      const filters: any = {};
+      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (searchQuery) filters.search = searchQuery;
+
+      const result = await getMerchantOrdersAction(filters);
+      if (result.success) {
+        setOrders(result.data || []);
+      } else {
+        toast.error(result.error || 'Failed to load orders');
+      }
+    } catch (error) {
+      toast.error('Failed to load orders');
+      console.error('Error loading orders:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const result = await getMerchantOrderStatsAction();
+      if (result.success && result.data) {
+        setStats(result.data);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadOrders();
+    loadStats();
+  }, [statusFilter, searchQuery]);
+
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    setIsUpdatingStatus(true);
+    try {
+      const result = await updateOrderStatusAction(orderId, newStatus);
+      if (result.success) {
+        toast.success(result.message || 'Order status updated successfully');
+        // Refresh orders and stats
+        loadOrders();
+        loadStats();
+      } else {
+        toast.error(result.error || 'Failed to update order status');
+      }
+    } catch (error) {
+      toast.error('Failed to update order status');
+      console.error('Error updating order status:', error);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate refresh
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    loadOrders();
+    loadStats();
   };
 
-  const totalOrders = orders.length;
-  const pendingOrders = orders.filter(
-    (order) => order.status === "PENDING",
-  ).length;
-  const processingOrders = orders.filter(
-    (order) => order.status === "PROCESSING",
-  ).length;
-  const completedOrders = orders.filter(
-    (order) => order.status === "DELIVERED",
-  ).length;
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const filters: any = {};
+      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (dateFilter.startDate) filters.startDate = dateFilter.startDate;
+      if (dateFilter.endDate) filters.endDate = dateFilter.endDate;
+
+      const result = await exportOrdersAction(filters);
+      if (result.success && result.data) {
+        // Create and download CSV file
+        const blob = new Blob([result.data.csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = result.data.filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Orders exported successfully');
+      } else {
+        toast.error(result.error || 'Failed to export orders');
+      }
+    } catch (error) {
+      toast.error('Failed to export orders');
+      console.error('Error exporting orders:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setPaymentStatusFilter('all');
+    setDateFilter({ startDate: '', endDate: '' });
+    setShowAdvancedFilters(false);
+  };
+
+  if (isLoading && orders.length === 0) {
+    return <PageLoader isLoading={true} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 w-full">
@@ -114,16 +212,24 @@ const Page: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Order Management
               </h1>
-              <p className="text-gray-600">Track and manage your customer orders</p>
+              <p className="text-gray-600">
+                Track and manage your customer orders
+              </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={isLoading}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
+                />
                 Refresh
               </Button>
-              <Button>
+              <Button onClick={handleExport} disabled={isExporting}>
                 <Download className="h-4 w-4 mr-2" />
-                Export Orders
+                {isExporting ? 'Exporting...' : 'Export Orders'}
               </Button>
             </div>
           </div>
@@ -133,7 +239,7 @@ const Page: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="Total Orders"
-            value={totalOrders.toString()}
+            value={stats.totalOrders.toString()}
             change={12.5}
             changeType="positive"
             icon={<Package className="h-5 w-5" />}
@@ -143,7 +249,7 @@ const Page: React.FC = () => {
           />
           <StatCard
             title="Pending Orders"
-            value={pendingOrders.toString()}
+            value={stats.pendingOrders.toString()}
             change={-8.2}
             changeType="negative"
             icon={<Clock className="h-5 w-5" />}
@@ -153,7 +259,7 @@ const Page: React.FC = () => {
           />
           <StatCard
             title="Completed Orders"
-            value={completedOrders.toString()}
+            value={stats.deliveredOrders.toString()}
             change={18.5}
             changeType="positive"
             icon={<CheckCircle className="h-5 w-5" />}
@@ -163,7 +269,7 @@ const Page: React.FC = () => {
           />
           <StatCard
             title="Total Revenue"
-            value={`$${(totalRevenue / 1000).toFixed(0)}K`}
+            value={`$${(stats.totalRevenue / 1000).toFixed(0)}K`}
             change={22.1}
             changeType="positive"
             icon={<DollarSign className="h-5 w-5" />}
@@ -222,11 +328,14 @@ const Page: React.FC = () => {
                         type="text"
                         placeholder="Search orders by number or customer..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={e => setSearchQuery(e.target.value)}
                         className="pl-10"
                       />
                     </div>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select
+                      value={statusFilter}
+                      onValueChange={setStatusFilter}
+                    >
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
@@ -241,62 +350,171 @@ const Page: React.FC = () => {
                     </Select>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setShowAdvancedFilters(!showAdvancedFilters)
+                      }
+                    >
                       <Filter className="h-4 w-4 mr-2" />
-                      More Filters
+                      {showAdvancedFilters ? 'Less Filters' : 'More Filters'}
                     </Button>
+                    {(searchQuery ||
+                      statusFilter !== 'all' ||
+                      paymentStatusFilter !== 'all' ||
+                      dateFilter.startDate ||
+                      dateFilter.endDate) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearFilters}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Clear All
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Start Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={dateFilter.startDate}
+                        onChange={e =>
+                          setDateFilter(prev => ({
+                            ...prev,
+                            startDate: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        End Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={dateFilter.endDate}
+                        onChange={e =>
+                          setDateFilter(prev => ({
+                            ...prev,
+                            endDate: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Payment Status
+                      </label>
+                      <Select
+                        value={paymentStatusFilter}
+                        onValueChange={setPaymentStatusFilter}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Payment Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">
+                            All Payment Status
+                          </SelectItem>
+                          <SelectItem value="PAID">Paid</SelectItem>
+                          <SelectItem value="PENDING">
+                            Pending Payment
+                          </SelectItem>
+                          <SelectItem value="FAILED">Failed</SelectItem>
+                          <SelectItem value="REFUNDED">Refunded</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Enhanced Orders List */}
             <div className="space-y-4">
-              {filteredOrders.map((order) => (
-                <Card key={order.id} className="hover:shadow-md transition-shadow">
+              {isLoading && (
+                <div className="flex justify-center py-8">
+                  <RefreshCw className="h-6 w-6 animate-spin" />
+                </div>
+              )}
+              {orders.map(order => (
+                <Card
+                  key={order.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
                           <h3 className="text-xl font-semibold text-gray-900">
-                            {order.orderNumber}
+                            {order.id}
                           </h3>
                           <Badge
                             className={getPaymentStatusColor(order.status)}
                           >
                             {getPaymentStatusIcon(order.status)}
                             <span className="ml-1 capitalize">
-                              {order.status}
+                              {order.status?.toLowerCase()}
                             </span>
                           </Badge>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4" />
                             <div>
-                              <p className="font-medium text-gray-900">{order.customer.name}</p>
-                              <p className="text-xs text-gray-500">{order.customer.email}</p>
+                              <p className="font-medium text-gray-900">
+                                {order.customer?.fullName || 'N/A'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {order.customer?.email || 'N/A'}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
                             <div>
-                              <p className="font-medium">{new Date(order.orderDate).toLocaleDateString()}</p>
-                              <p className="text-xs text-gray-500">Order Date</p>
+                              <p className="font-medium">
+                                {order.createdAt
+                                  ? new Date(
+                                      order.createdAt
+                                    ).toLocaleDateString()
+                                  : 'N/A'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Order Date
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4" />
                             <div>
-                              <p className="font-medium text-green-600">${order.total.toLocaleString()}</p>
-                              <p className="text-xs text-gray-500">Total Amount</p>
+                              <p className="font-medium text-green-600">
+                                ${parseFloat(order.total).toLocaleString()}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Total Amount
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4" />
                             <div>
-                              <p className="font-medium">{order.paymentStatus}</p>
+                              <p className="font-medium">
+                                {order.paymentMethod || 'N/A'}
+                              </p>
                               <p className="text-xs text-gray-500">Payment</p>
                             </div>
                           </div>
@@ -304,56 +522,91 @@ const Page: React.FC = () => {
 
                         {/* Order Items Preview */}
                         <div className="bg-gray-50 p-3 rounded-lg">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Order Items:</p>
+                          <p className="text-sm font-medium text-gray-700 mb-2">
+                            Order Items:
+                          </p>
                           <div className="flex flex-wrap gap-2">
-                            {order.products.slice(0, 3).map((product, index) => (
-                              <span key={index} className="text-xs bg-white px-2 py-1 rounded border">
-                                {product.name} (x{product.quantity})
-                              </span>
-                            ))}
-                            {order.products.length > 3 && (
+                            {order.orderItems &&
+                            Array.isArray(order.orderItems) ? (
+                              order.orderItems
+                                .slice(0, 3)
+                                .map((item: any, index: number) => (
+                                  <span
+                                    key={index}
+                                    className="text-xs bg-white px-2 py-1 rounded border"
+                                  >
+                                    {item.product?.name || 'Unknown Product'} (x
+                                    {item.quantity})
+                                  </span>
+                                ))
+                            ) : (
                               <span className="text-xs text-gray-500">
-                                +{order.products.length - 3} more items
+                                No items found
                               </span>
                             )}
+                            {order.orderItems &&
+                              order.orderItems.length > 3 && (
+                                <span className="text-xs text-gray-500">
+                                  +{order.orderItems.length - 3} more items
+                                </span>
+                              )}
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-2 ml-4">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() =>
                             setSelectedOrder(
-                              selectedOrder === order.id ? null : order.id,
+                              selectedOrder === order.id ? null : order.id
                             )
                           }
                         >
                           <Eye className="h-4 w-4 mr-2" />
-                          {selectedOrder === order.id ? "Hide" : "View"} Details
+                          {selectedOrder === order.id ? 'Hide' : 'View'} Details
                         </Button>
                         <Button variant="outline" size="sm">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
-                        {order.status === "PENDING" && (
+                        {order.status?.toUpperCase() === 'PENDING' && (
                           <Button
                             size="sm"
                             onClick={() =>
-                              handleStatusUpdate(order.id, "PROCESSING")
+                              handleStatusUpdate(order.id, 'PROCESSING')
                             }
+                            disabled={isUpdatingStatus}
                           >
-                            Process Order
+                            {isUpdatingStatus
+                              ? 'Processing...'
+                              : 'Process Order'}
                           </Button>
                         )}
-                        {order.status === "PROCESSING" && (
+                        {order.status?.toUpperCase() === 'PROCESSING' && (
                           <Button
                             size="sm"
                             onClick={() =>
-                              handleStatusUpdate(order.id, "SHIPPED")
+                              handleStatusUpdate(order.id, 'SHIPPED')
                             }
+                            disabled={isUpdatingStatus}
                           >
-                            Mark as Shipped
+                            {isUpdatingStatus
+                              ? 'Updating...'
+                              : 'Mark as Shipped'}
+                          </Button>
+                        )}
+                        {order.status?.toUpperCase() === 'SHIPPED' && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleStatusUpdate(order.id, 'DELIVERED')
+                            }
+                            disabled={isUpdatingStatus}
+                          >
+                            {isUpdatingStatus
+                              ? 'Updating...'
+                              : 'Mark as Delivered'}
                           </Button>
                         )}
                       </div>
@@ -370,46 +623,49 @@ const Page: React.FC = () => {
                             <div className="space-y-2 text-sm">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">Name:</span>
-                                <span>{order.customer.name}</span>
+                                <span>{order.customer?.fullName || 'N/A'}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-gray-500" />
-                                <span>{order.customer.email}</span>
+                                <span>{order.customer?.email || 'N/A'}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-gray-500" />
-                                <span>{order.customer.phone}</span>
+                                <span>{order.customer?.phone || 'N/A'}</span>
                               </div>
                               <div className="flex items-start gap-2">
                                 <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
-                                <span>{order.customer.address}</span>
+                                <span>{order.shippingAddress || 'N/A'}</span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Shipping Information */}
+                          {/* Order Information */}
                           <div>
                             <h4 className="font-semibold mb-3">
-                              Shipping Information
+                              Order Information
                             </h4>
                             <div className="space-y-2 text-sm">
                               <div>
-                                <strong>Method:</strong> {order.shippingMethod}
+                                <strong>Payment Method:</strong>{' '}
+                                {order.paymentMethod || 'N/A'}
                               </div>
                               <div>
-                                <strong>Estimated Delivery:</strong>{" "}
-                                {order.estimatedDelivery}
+                                <strong>Payment ID:</strong>{' '}
+                                {order.paymentId || 'N/A'}
                               </div>
-                              {order.trackingNumber && (
-                                <div>
-                                  <strong>Tracking:</strong>{" "}
-                                  {order.trackingNumber}
-                                </div>
-                              )}
                               <div>
-                                <strong>Payment Status:</strong>
-                                <Badge className="ml-2 bg-green-100 text-green-800">
-                                  {order.paymentStatus}
+                                <strong>Order Date:</strong>{' '}
+                                {order.createdAt
+                                  ? new Date(order.createdAt).toLocaleString()
+                                  : 'N/A'}
+                              </div>
+                              <div>
+                                <strong>Status:</strong>
+                                <Badge
+                                  className={`ml-2 ${getPaymentStatusColor(order.status)}`}
+                                >
+                                  {order.status?.toLowerCase() || 'N/A'}
                                 </Badge>
                               </div>
                             </div>
@@ -420,30 +676,46 @@ const Page: React.FC = () => {
                         <div>
                           <h4 className="font-semibold mb-3">Order Items</h4>
                           <div className="space-y-3">
-                            {order.products.map((product, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                              >
-                                <div>
-                                  <h5 className="font-medium">
-                                    {product.name}
-                                  </h5>
-                                  <p className="text-sm text-gray-600">
-                                    SKU: {product.sku} | Size: {product.size} |
-                                    Color: {product.color}
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <p className="font-medium">
-                                    Qty: {product.quantity}
-                                  </p>
-                                  <p className="text-sm text-gray-600">
-                                    ${product.price.toLocaleString()} each
-                                  </p>
-                                </div>
+                            {order.orderItems &&
+                            Array.isArray(order.orderItems) ? (
+                              order.orderItems.map(
+                                (item: any, index: number) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                  >
+                                    <div>
+                                      <h5 className="font-medium">
+                                        {item.product?.name ||
+                                          'Unknown Product'}
+                                      </h5>
+                                      <p className="text-sm text-gray-600">
+                                        SKU: {item.product?.sku || 'N/A'} |
+                                        Size: {item.size || 'N/A'} | Color:{' '}
+                                        {item.color || 'N/A'}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="font-medium">
+                                        Qty: {item.quantity}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        ${parseFloat(item.price).toFixed(2)}{' '}
+                                        each
+                                      </p>
+                                      <p className="font-medium text-green-600">
+                                        ${parseFloat(item.total).toFixed(2)}{' '}
+                                        total
+                                      </p>
+                                    </div>
+                                  </div>
+                                )
+                              )
+                            ) : (
+                              <div className="p-3 bg-gray-50 rounded-lg text-center text-gray-500">
+                                No items found for this order
                               </div>
-                            ))}
+                            )}
                           </div>
                         </div>
 
@@ -451,37 +723,20 @@ const Page: React.FC = () => {
                         <div className="bg-gray-50 p-4 rounded-lg">
                           <h4 className="font-semibold mb-3">Order Summary</h4>
                           <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span>Subtotal:</span>
-                              <span>${order.subtotal.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Shipping:</span>
-                              <span>
-                                {order.shipping === 0
-                                  ? "Free"
-                                  : `$${order.shipping}`}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Tax:</span>
-                              <span>${order.tax.toLocaleString()}</span>
-                            </div>
                             <div className="flex justify-between font-semibold text-base border-t pt-2">
                               <span>Total:</span>
-                              <span>${order.total.toLocaleString()}</span>
+                              <span>${parseFloat(order.total).toFixed(2)}</span>
                             </div>
+                            <div className="text-xs text-gray-500 mt-2">
+                              Order ID: {order.id}
+                            </div>
+                            {order.paymentId && (
+                              <div className="text-xs text-gray-500">
+                                Payment ID: {order.paymentId}
+                              </div>
+                            )}
                           </div>
                         </div>
-
-                        {order.notes && (
-                          <div>
-                            <h4 className="font-semibold mb-2">Order Notes</h4>
-                            <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
-                              {order.notes}
-                            </p>
-                          </div>
-                        )}
                       </div>
                     )}
                   </CardContent>
@@ -499,11 +754,11 @@ const Page: React.FC = () => {
                 <div className="space-y-4">
                   {orders
                     .filter(
-                      (order) =>
-                        order.status === "pending" ||
-                        order.status === "processing",
+                      order =>
+                        order.status === 'pending' ||
+                        order.status === 'processing'
                     )
-                    .map((order) => (
+                    .map(order => (
                       <div
                         key={order.id}
                         className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200"
@@ -522,7 +777,7 @@ const Page: React.FC = () => {
                             View Details
                           </Button>
                           <Button size="sm">
-                            {order.status === "pending" ? "Process" : "Ship"}
+                            {order.status === 'pending' ? 'Process' : 'Ship'}
                           </Button>
                         </div>
                       </div>
@@ -540,36 +795,58 @@ const Page: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {["pending", "processing", "shipped", "delivered"].map(
-                      (status) => {
-                        const count = orders.filter(
-                          (order) => order.status === status,
-                        ).length;
-                        const percentage = (count / totalOrders) * 100;
-                        return (
-                          <div
-                            key={status}
-                            className="flex items-center justify-between"
-                          >
-                            <div className="flex items-center gap-2">
-                              {getPaymentStatusIcon(status)}
-                              <span className="capitalize">{status}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-blue-600 h-2 rounded-full"
-                                  style={{ width: `${percentage}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-sm font-medium">
-                                {count}
-                              </span>
-                            </div>
-                          </div>
-                        );
+                    {[
+                      {
+                        key: 'pending',
+                        label: 'Pending',
+                        count: stats.pendingOrders,
                       },
-                    )}
+                      {
+                        key: 'processing',
+                        label: 'Processing',
+                        count: stats.processingOrders,
+                      },
+                      {
+                        key: 'shipped',
+                        label: 'Shipped',
+                        count: stats.shippedOrders,
+                      },
+                      {
+                        key: 'delivered',
+                        label: 'Delivered',
+                        count: stats.deliveredOrders,
+                      },
+                      {
+                        key: 'cancelled',
+                        label: 'Cancelled',
+                        count: stats.cancelledOrders,
+                      },
+                    ].map(({ key, label, count }) => {
+                      const percentage =
+                        stats.totalOrders > 0
+                          ? (count / stats.totalOrders) * 100
+                          : 0;
+                      return (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            {getPaymentStatusIcon(key)}
+                            <span className="capitalize">{label}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full"
+                                style={{ width: `${percentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm font-medium">{count}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -583,30 +860,33 @@ const Page: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total Revenue</span>
                       <span className="font-semibold">
-                        ${totalRevenue.toLocaleString()}
+                        ${stats.totalRevenue.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Average Order Value</span>
                       <span className="font-semibold">
-                        ${(totalRevenue / totalOrders).toFixed(2)}
+                        $
+                        {stats.totalOrders > 0
+                          ? (stats.totalRevenue / stats.totalOrders).toFixed(2)
+                          : '0.00'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Completed Orders</span>
                       <span className="font-semibold">
-                        {orders.filter((o) => o.status === "delivered").length}
+                        {stats.deliveredOrders}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Completion Rate</span>
                       <span className="font-semibold">
-                        {(
-                          (orders.filter((o) => o.status === "delivered")
-                            .length /
-                            totalOrders) *
-                          100
-                        ).toFixed(1)}
+                        {stats.totalOrders > 0
+                          ? (
+                              (stats.deliveredOrders / stats.totalOrders) *
+                              100
+                            ).toFixed(1)
+                          : '0.0'}
                         %
                       </span>
                     </div>

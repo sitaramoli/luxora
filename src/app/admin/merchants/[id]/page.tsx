@@ -1,21 +1,5 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   ArrowLeft,
   Mail,
@@ -30,8 +14,25 @@ import {
   Edit,
   Save,
   Ban,
-} from "lucide-react";
-import { cn, getStatusColor } from "@/lib/utils";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { cn, getStatusColor } from '@/lib/utils';
 
 interface MerchantData {
   name: string;
@@ -51,26 +52,32 @@ interface Props {
   }>;
 }
 
-const Page: React.FC<Props> = async ({ params }) => {
-  const { id } = await params;
+const Page: React.FC<Props> = ({ params }) => {
+  const [id, setId] = React.useState<string>('');
+
+  React.useEffect(() => {
+    params.then(resolvedParams => {
+      setId(resolvedParams.id);
+    });
+  }, [params]);
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [merchantData, setMerchantData] = useState<MerchantData>({
-    name: "",
-    email: "",
-    phone: "",
-    website: "",
-    address: "",
-    description: "",
-    category: "",
+    name: '',
+    email: '',
+    phone: '',
+    website: '',
+    address: '',
+    description: '',
+    category: '',
     commission: 0,
-    status: "",
+    status: '',
   });
 
   useEffect(() => {}, []);
 
   const handleInputChange = (field: string, value: string | number) => {
-    setMerchantData((prev) => ({ ...prev, [field]: value }));
+    setMerchantData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = () => {
@@ -79,11 +86,11 @@ const Page: React.FC<Props> = async ({ params }) => {
   };
 
   const merchantStats = [
-    { label: "Total Products", value: "245", icon: Package },
-    { label: "Total Sales", value: "$1,247,392", icon: DollarSign },
-    { label: "Rating", value: "4.9", icon: Star },
+    { label: 'Total Products', value: '245', icon: Package },
+    { label: 'Total Sales', value: '$1,247,392', icon: DollarSign },
+    { label: 'Rating', value: '4.9', icon: Star },
     {
-      label: "Commission",
+      label: 'Commission',
       value: `${merchantData.commission}%`,
       icon: DollarSign,
     },
@@ -91,49 +98,49 @@ const Page: React.FC<Props> = async ({ params }) => {
 
   const recentOrders = [
     {
-      id: "ORD-001",
-      customer: "Sarah Johnson",
-      amount: "$2,850",
-      date: "2024-01-15",
-      status: "completed",
+      id: 'ORD-001',
+      customer: 'Sarah Johnson',
+      amount: '$2,850',
+      date: '2024-01-15',
+      status: 'completed',
     },
     {
-      id: "ORD-002",
-      customer: "Michael Chen",
-      amount: "$1,200",
-      date: "2024-01-14",
-      status: "shipped",
+      id: 'ORD-002',
+      customer: 'Michael Chen',
+      amount: '$1,200',
+      date: '2024-01-14',
+      status: 'shipped',
     },
     {
-      id: "ORD-003",
-      customer: "Emma Wilson",
-      amount: "$4,500",
-      date: "2024-01-13",
-      status: "processing",
+      id: 'ORD-003',
+      customer: 'Emma Wilson',
+      amount: '$4,500',
+      date: '2024-01-13',
+      status: 'processing',
     },
   ];
 
   const recentProducts = [
     {
-      id: "PRD-001",
-      name: "Silk Evening Gown",
-      price: "$2,850",
-      status: "active",
-      date: "2024-01-10",
+      id: 'PRD-001',
+      name: 'Silk Evening Gown',
+      price: '$2,850',
+      status: 'active',
+      date: '2024-01-10',
     },
     {
-      id: "PRD-002",
-      name: "Leather Handbag",
-      price: "$4,200",
-      status: "active",
-      date: "2024-01-08",
+      id: 'PRD-002',
+      name: 'Leather Handbag',
+      price: '$4,200',
+      status: 'active',
+      date: '2024-01-08',
     },
     {
-      id: "PRD-003",
-      name: "Designer Sunglasses",
-      price: "$350",
-      status: "pending",
-      date: "2024-01-12",
+      id: 'PRD-003',
+      name: 'Designer Sunglasses',
+      price: '$350',
+      status: 'pending',
+      date: '2024-01-12',
     },
   ];
 
@@ -158,19 +165,19 @@ const Page: React.FC<Props> = async ({ params }) => {
                 <span className="text-gray-600">Merchant ID: {id}</span>
                 <Badge
                   className={cn(
-                    "capitalize",
-                    getStatusColor(merchantData.status),
+                    'capitalize',
+                    getStatusColor(merchantData.status)
                   )}
                 >
-                  {merchantData.status.replace("_", " ")}
+                  {merchantData.status.replace('_', ' ')}
                 </Badge>
               </div>
             </div>
             <div className="flex gap-2">
-              {merchantData.status === "PENDING" && (
+              {merchantData.status === 'PENDING' && (
                 <>
                   <Button
-                    onClick={() => handleInputChange("status", "ACTIVE")}
+                    onClick={() => handleInputChange('status', 'ACTIVE')}
                     className="bg-green-600 hover:bg-green-700"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
@@ -178,24 +185,24 @@ const Page: React.FC<Props> = async ({ params }) => {
                   </Button>
                   <Button
                     variant="destructive"
-                    onClick={() => handleInputChange("status", "SUSPENDED")}
+                    onClick={() => handleInputChange('status', 'SUSPENDED')}
                   >
                     <XCircle className="h-4 w-4 mr-2" />
                     Reject
                   </Button>
                 </>
               )}
-              {merchantData.status === "active" && (
+              {merchantData.status === 'active' && (
                 <Button
                   variant="destructive"
-                  onClick={() => handleInputChange("status", "SUSPENDED")}
+                  onClick={() => handleInputChange('status', 'SUSPENDED')}
                 >
                   <Ban className="h-4 w-4 mr-2" />
                   Suspend
                 </Button>
               )}
               <Button
-                variant={isEditing ? "default" : "outline"}
+                variant={isEditing ? 'default' : 'outline'}
                 onClick={isEditing ? handleSave : () => setIsEditing(true)}
               >
                 {isEditing ? (
@@ -258,8 +265,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                         <Input
                           id="name"
                           value={merchantData.name}
-                          onChange={(e) =>
-                            handleInputChange("name", e.target.value)
+                          onChange={e =>
+                            handleInputChange('name', e.target.value)
                           }
                           disabled={!isEditing}
                         />
@@ -270,8 +277,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                           id="email"
                           type="email"
                           value={merchantData.email}
-                          onChange={(e) =>
-                            handleInputChange("email", e.target.value)
+                          onChange={e =>
+                            handleInputChange('email', e.target.value)
                           }
                           disabled={!isEditing}
                         />
@@ -284,8 +291,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                         <Input
                           id="phone"
                           value={merchantData.phone}
-                          onChange={(e) =>
-                            handleInputChange("phone", e.target.value)
+                          onChange={e =>
+                            handleInputChange('phone', e.target.value)
                           }
                           disabled={!isEditing}
                         />
@@ -295,8 +302,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                         <Input
                           id="website"
                           value={merchantData.website}
-                          onChange={(e) =>
-                            handleInputChange("website", e.target.value)
+                          onChange={e =>
+                            handleInputChange('website', e.target.value)
                           }
                           disabled={!isEditing}
                         />
@@ -308,8 +315,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                       <Textarea
                         id="address"
                         value={merchantData.address}
-                        onChange={(e) =>
-                          handleInputChange("address", e.target.value)
+                        onChange={e =>
+                          handleInputChange('address', e.target.value)
                         }
                         disabled={!isEditing}
                         rows={2}
@@ -321,8 +328,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                       <Textarea
                         id="description"
                         value={merchantData.description}
-                        onChange={(e) =>
-                          handleInputChange("description", e.target.value)
+                        onChange={e =>
+                          handleInputChange('description', e.target.value)
                         }
                         disabled={!isEditing}
                         rows={3}
@@ -334,8 +341,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                         <Label htmlFor="category">Category</Label>
                         <Select
                           value={merchantData.category}
-                          onValueChange={(value) =>
-                            handleInputChange("category", value)
+                          onValueChange={value =>
+                            handleInputChange('category', value)
                           }
                           disabled={!isEditing}
                         >
@@ -359,10 +366,10 @@ const Page: React.FC<Props> = async ({ params }) => {
                           id="commission"
                           type="number"
                           value={merchantData.commission}
-                          onChange={(e) =>
+                          onChange={e =>
                             handleInputChange(
-                              "commission",
-                              parseInt(e.target.value),
+                              'commission',
+                              parseInt(e.target.value)
                             )
                           }
                           disabled={!isEditing}
@@ -372,8 +379,8 @@ const Page: React.FC<Props> = async ({ params }) => {
                         <Label htmlFor="status">Status</Label>
                         <Select
                           value={merchantData.status}
-                          onValueChange={(value) =>
-                            handleInputChange("status", value)
+                          onValueChange={value =>
+                            handleInputChange('status', value)
                           }
                           disabled={!isEditing}
                         >
@@ -402,7 +409,7 @@ const Page: React.FC<Props> = async ({ params }) => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {recentProducts.map((product) => (
+                      {recentProducts.map(product => (
                         <div
                           key={product.id}
                           className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
@@ -440,7 +447,7 @@ const Page: React.FC<Props> = async ({ params }) => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {recentOrders.map((order) => (
+                      {recentOrders.map(order => (
                         <div
                           key={order.id}
                           className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"

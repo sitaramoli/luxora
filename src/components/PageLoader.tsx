@@ -1,19 +1,20 @@
-import * as React from "react";
-import { Loader } from "lucide-react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import { cva, type VariantProps } from 'class-variance-authority';
+import { Loader } from 'lucide-react';
+import * as React from 'react';
 
-const spinnerVariants = cva("animate-spin text-primary", {
+import { cn } from '@/lib/utils';
+
+const spinnerVariants = cva('animate-spin text-primary', {
   variants: {
     size: {
-      default: "h-8 w-8",
-      sm: "h-4 w-4",
-      lg: "h-12 w-12",
-      icon: "h-5 w-5",
+      default: 'h-8 w-8',
+      sm: 'h-4 w-4',
+      lg: 'h-12 w-12',
+      icon: 'h-5 w-5',
     },
   },
   defaultVariants: {
-    size: "default",
+    size: 'default',
   },
 });
 
@@ -33,7 +34,7 @@ export const LoadingSpinner = React.forwardRef<
     />
   );
 });
-LoadingSpinner.displayName = "LoadingSpinner";
+LoadingSpinner.displayName = 'LoadingSpinner';
 
 interface PageLoaderProps {
   isLoading: boolean;

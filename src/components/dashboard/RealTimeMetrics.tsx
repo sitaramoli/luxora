@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Activity, 
-  Users, 
-  ShoppingCart, 
+import {
+  Activity,
+  Users,
+  ShoppingCart,
   TrendingUp,
   Wifi,
   WifiOff,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 interface Metric {
@@ -32,7 +32,7 @@ interface RealTimeMetricsProps {
 
 export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
   metrics,
-  title = "Real-time Metrics",
+  title = 'Real-time Metrics',
   refreshInterval = 30000, // 30 seconds
 }) => {
   const [isOnline, setIsOnline] = useState(true);
@@ -89,8 +89,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
             {title}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge 
-              variant={isOnline ? "default" : "destructive"}
+            <Badge
+              variant={isOnline ? 'default' : 'destructive'}
               className="flex items-center gap-1"
             >
               {isOnline ? (
@@ -105,8 +105,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
               disabled={isRefreshing}
               className="p-1 hover:bg-gray-100 rounded transition-colors"
             >
-              <RefreshCw 
-                className={`h-4 w-4 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`} 
+              <RefreshCw
+                className={`h-4 w-4 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`}
               />
             </button>
           </div>
@@ -117,13 +117,13 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {metrics.map((metric) => (
+          {metrics.map(metric => (
             <div
               key={metric.id}
               className="p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
-                <div 
+                <div
                   className="p-2 rounded-lg"
                   style={{ backgroundColor: `${metric.color}20` }}
                 >
@@ -137,23 +137,25 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
                     {metric.changeType === 'negative' && (
                       <TrendingUp className="h-3 w-3 text-red-600 rotate-180" />
                     )}
-                    <span 
+                    <span
                       className={`text-xs font-medium ${
-                        metric.changeType === 'positive' 
-                          ? 'text-green-600' 
+                        metric.changeType === 'positive'
+                          ? 'text-green-600'
                           : metric.changeType === 'negative'
-                          ? 'text-red-600'
-                          : 'text-gray-600'
+                            ? 'text-red-600'
+                            : 'text-gray-600'
                       }`}
                     >
-                      {metric.change > 0 ? '+' : ''}{metric.change}%
+                      {metric.change > 0 ? '+' : ''}
+                      {metric.change}%
                     </span>
                   </div>
                 </div>
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {metric.value.toLocaleString()}{metric.unit}
+                  {metric.value.toLocaleString()}
+                  {metric.unit}
                 </p>
                 <p className="text-sm text-gray-600">{metric.label}</p>
               </div>

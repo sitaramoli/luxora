@@ -1,20 +1,5 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search,
   Eye,
@@ -28,16 +13,32 @@ import {
   Download,
   RefreshCw,
   ArrowLeft,
-} from "lucide-react";
-import { toast } from "sonner";
-import { PageLoader } from "@/components/PageLoader";
-import { useSession } from "next-auth/react";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+
+import { PageLoader } from '@/components/PageLoader';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Order {
   id: string;
   orderNumber: string;
   date: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   total: number;
   items: number;
   merchant: string;
@@ -53,30 +54,30 @@ interface Order {
 
 const OrdersPage = () => {
   const { status } = useSession();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       const fetchOrders = async () => {
         try {
           setIsLoading(true);
-          const response = await fetch("/api/orders?action=getAllOrders");
+          const response = await fetch('/api/orders?action=getAllOrders');
           if (!response.ok) {
-            throw new Error("Failed to fetch orders");
+            throw new Error('Failed to fetch orders');
           }
           const data = await response.json();
           setOrders(data.orders);
         } catch (error) {
-          toast.error("Error", {
-            description: "An error occurred while processing your request.",
+          toast.error('Error', {
+            description: 'An error occurred while processing your request.',
           });
-          console.error("Error fetching orders:", error);
+          console.error('Error fetching orders:', error);
         } finally {
           setIsLoading(false);
         }
@@ -88,32 +89,32 @@ const OrdersPage = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "delivered":
-        return "bg-green-100 text-green-800";
-      case "shipped":
-        return "bg-blue-100 text-blue-800";
-      case "processing":
-        return "bg-yellow-100 text-yellow-800";
-      case "pending":
-        return "bg-orange-100 text-orange-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
+      case 'delivered':
+        return 'bg-green-100 text-green-800';
+      case 'shipped':
+        return 'bg-blue-100 text-blue-800';
+      case 'processing':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'pending':
+        return 'bg-orange-100 text-orange-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "delivered":
+      case 'delivered':
         return <CheckCircle className="h-4 w-4" />;
-      case "shipped":
+      case 'shipped':
         return <Truck className="h-4 w-4" />;
-      case "processing":
+      case 'processing':
         return <Package className="h-4 w-4" />;
-      case "pending":
+      case 'pending':
         return <Clock className="h-4 w-4" />;
-      case "cancelled":
+      case 'cancelled':
         return <XCircle className="h-4 w-4" />;
       default:
         return <Package className="h-4 w-4" />;
@@ -121,12 +122,12 @@ const OrdersPage = () => {
   };
 
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
+    return orders.filter(order => {
       const matchesSearch =
         order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.merchant.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
-        statusFilter === "all" || order.status === statusFilter;
+        statusFilter === 'all' || order.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [orders, searchQuery, statusFilter]);
@@ -134,17 +135,17 @@ const OrdersPage = () => {
   const ordersByStatus = useMemo(() => {
     return {
       all: orders?.length,
-      pending: orders?.filter((o) => o.status === "pending").length,
-      processing: orders?.filter((o) => o.status === "processing").length,
-      shipped: orders?.filter((o) => o.status === "shipped").length,
-      delivered: orders?.filter((o) => o.status === "delivered").length,
-      cancelled: orders?.filter((o) => o.status === "cancelled").length,
+      pending: orders?.filter(o => o.status === 'pending').length,
+      processing: orders?.filter(o => o.status === 'processing').length,
+      shipped: orders?.filter(o => o.status === 'shipped').length,
+      delivered: orders?.filter(o => o.status === 'delivered').length,
+      cancelled: orders?.filter(o => o.status === 'cancelled').length,
     };
   }, [orders]);
 
   return (
     <>
-      <PageLoader isLoading={status === "loading" || isLoading} />
+      <PageLoader isLoading={status === 'loading' || isLoading} />
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
@@ -171,7 +172,7 @@ const OrdersPage = () => {
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold text-gray-900">{count}</p>
                   <p className="text-sm text-gray-600 capitalize">
-                    {status === "all" ? "Total" : status}
+                    {status === 'all' ? 'Total' : status}
                   </p>
                 </CardContent>
               </Card>
@@ -195,7 +196,7 @@ const OrdersPage = () => {
                         type="text"
                         placeholder="Search orders..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={e => setSearchQuery(e.target.value)}
                         className="pl-10"
                       />
                     </div>
@@ -236,7 +237,7 @@ const OrdersPage = () => {
 
               {/* Orders List */}
               <div className="space-y-4">
-                {filteredOrders.map((order) => (
+                {filteredOrders.map(order => (
                   <Card key={order.id}>
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -266,7 +267,7 @@ const OrdersPage = () => {
                             <div className="flex items-center gap-1">
                               <Package className="h-4 w-4" />
                               <span>
-                                {order.items} item{order.items > 1 ? "s" : ""}
+                                {order.items} item{order.items > 1 ? 's' : ''}
                               </span>
                             </div>
                             <div>
@@ -275,7 +276,7 @@ const OrdersPage = () => {
                           </div>
                           {order.trackingNumber && (
                             <div className="mt-2 text-sm text-gray-600">
-                              <span className="font-medium">Tracking:</span>{" "}
+                              <span className="font-medium">Tracking:</span>{' '}
                               {order.trackingNumber}
                             </div>
                           )}
@@ -283,7 +284,7 @@ const OrdersPage = () => {
                             <div className="mt-1 text-sm text-gray-600">
                               <span className="font-medium">
                                 Est. Delivery:
-                              </span>{" "}
+                              </span>{' '}
                               {order.estimatedDelivery}
                             </div>
                           )}
@@ -295,13 +296,13 @@ const OrdersPage = () => {
                               View Details
                             </Button>
                           </Link>
-                          {order.status === "shipped" && (
+                          {order.status === 'shipped' && (
                             <Button variant="outline" size="sm">
                               <Truck className="h-4 w-4 mr-2" />
                               Track Package
                             </Button>
                           )}
-                          {order.status === "delivered" && (
+                          {order.status === 'delivered' && (
                             <Button variant="outline" size="sm">
                               <RefreshCw className="h-4 w-4 mr-2" />
                               Reorder
@@ -339,7 +340,7 @@ const OrdersPage = () => {
                           {order.products.length > 3 && (
                             <div className="text-sm text-gray-500">
                               +{order.products.length - 3} more item
-                              {order.products.length - 3 > 1 ? "s" : ""}
+                              {order.products.length - 3 > 1 ? 's' : ''}
                             </div>
                           )}
                         </div>

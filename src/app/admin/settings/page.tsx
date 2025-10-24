@@ -1,48 +1,40 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Shield, 
-  Save, 
-  Lock, 
-  Bell, 
-  Globe, 
+import {
+  Shield,
+  Save,
+  Lock,
+  Bell,
+  Globe,
   Settings,
   Database,
   Mail,
-  CreditCard,
   Users,
   AlertTriangle,
   CheckCircle,
-  RefreshCw,
   Download,
   Upload,
-  Eye,
-  EyeOff
-} from "lucide-react";
-import { useSession } from "next-auth/react";
-import { PageLoader } from "@/components/PageLoader";
-import { Checkbox } from "@/components/ui/checkbox";
-import { StatCard } from "@/components/dashboard/StatCard";
-import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import {
-  adminActivityData,
-  miniChartData
-} from "@/constants/dashboard-data";
+} from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import React, { useEffect, useState } from 'react';
+
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { PageLoader } from '@/components/PageLoader';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { adminActivityData, miniChartData } from '@/constants/dashboard-data';
 
 const Page: React.FC = () => {
   const { status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [settings, setSettings] = useState({
-    platformName: "Luxora",
-    platformEmail: "admin@luxora.com",
+    platformName: 'Luxora',
+    platformEmail: 'admin@luxora.com',
     maintenanceMode: false,
     registrationEnabled: true,
     emailNotifications: true,
@@ -53,7 +45,7 @@ const Page: React.FC = () => {
     passwordMinLength: 8,
     requireStrongPassword: true,
     autoBackup: true,
-    backupFrequency: "daily",
+    backupFrequency: 'daily',
     dataRetention: 365,
     analyticsEnabled: true,
     errorReporting: true,
@@ -61,13 +53,13 @@ const Page: React.FC = () => {
   });
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       const fetchData = async () => {
         try {
           setIsLoading(true);
           // TODO: Fetch settings from API
         } catch (error) {
-          console.error("Error fetching settings:", error);
+          console.error('Error fetching settings:', error);
         } finally {
           setIsLoading(false);
         }
@@ -80,10 +72,10 @@ const Page: React.FC = () => {
     setIsLoading(true);
     try {
       // TODO: Save settings to API
-      console.log("Saving settings:", settings);
+      console.log('Saving settings:', settings);
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
     } catch (error) {
-      console.error("Error saving settings:", error);
+      console.error('Error saving settings:', error);
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +83,7 @@ const Page: React.FC = () => {
 
   const handleExportSettings = () => {
     const dataStr = JSON.stringify(settings, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
     const exportFileDefaultName = 'luxora-settings.json';
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -99,18 +91,18 @@ const Page: React.FC = () => {
     linkElement.click();
   };
 
-  
-
   return (
     <>
-      <PageLoader isLoading={status === "loading" || isLoading} />
+      <PageLoader isLoading={status === 'loading' || isLoading} />
       <div className="min-h-screen bg-gray-50 w-full">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Settings
+                </h1>
                 <p className="text-gray-600">
                   Manage your administrator account and platform settings
                 </p>
@@ -122,7 +114,7 @@ const Page: React.FC = () => {
                 </Button>
                 <Button onClick={handleSaveSettings} disabled={isLoading}>
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? "Saving..." : "Save Changes"}
+                  {isLoading ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
             </div>
@@ -198,7 +190,12 @@ const Page: React.FC = () => {
                           <Input
                             id="platformName"
                             value={settings.platformName}
-                            onChange={(e) => setSettings({...settings, platformName: e.target.value})}
+                            onChange={e =>
+                              setSettings({
+                                ...settings,
+                                platformName: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="space-y-2">
@@ -207,11 +204,16 @@ const Page: React.FC = () => {
                             id="platformEmail"
                             type="email"
                             value={settings.platformEmail}
-                            onChange={(e) => setSettings({...settings, platformEmail: e.target.value})}
+                            onChange={e =>
+                              setSettings({
+                                ...settings,
+                                platformEmail: e.target.value,
+                              })
+                            }
                           />
                         </div>
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
@@ -225,10 +227,15 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.maintenanceMode}
-                            onCheckedChange={(checked) => setSettings({...settings, maintenanceMode: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({
+                                ...settings,
+                                maintenanceMode: checked,
+                              })
+                            }
                           />
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <Users className="h-5 w-5 text-gray-600" />
@@ -241,7 +248,12 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.registrationEnabled}
-                            onCheckedChange={(checked) => setSettings({...settings, registrationEnabled: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({
+                                ...settings,
+                                registrationEnabled: checked,
+                              })
+                            }
                           />
                         </div>
                       </div>
@@ -260,31 +272,47 @@ const Page: React.FC = () => {
                     <CardContent className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
+                          <Label htmlFor="sessionTimeout">
+                            Session Timeout (minutes)
+                          </Label>
                           <Input
                             id="sessionTimeout"
                             type="number"
                             value={settings.sessionTimeout}
-                            onChange={(e) => setSettings({...settings, sessionTimeout: parseInt(e.target.value)})}
+                            onChange={e =>
+                              setSettings({
+                                ...settings,
+                                sessionTimeout: parseInt(e.target.value),
+                              })
+                            }
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="maxLoginAttempts">Max Login Attempts</Label>
+                          <Label htmlFor="maxLoginAttempts">
+                            Max Login Attempts
+                          </Label>
                           <Input
                             id="maxLoginAttempts"
                             type="number"
                             value={settings.maxLoginAttempts}
-                            onChange={(e) => setSettings({...settings, maxLoginAttempts: parseInt(e.target.value)})}
+                            onChange={e =>
+                              setSettings({
+                                ...settings,
+                                maxLoginAttempts: parseInt(e.target.value),
+                              })
+                            }
                           />
                         </div>
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <Shield className="h-5 w-5 text-gray-600" />
                             <div>
-                              <p className="font-medium">Two-Factor Authentication</p>
+                              <p className="font-medium">
+                                Two-Factor Authentication
+                              </p>
                               <p className="text-sm text-gray-600">
                                 Require 2FA for all admin accounts
                               </p>
@@ -292,15 +320,22 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.twoFactorAuth}
-                            onCheckedChange={(checked) => setSettings({...settings, twoFactorAuth: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({
+                                ...settings,
+                                twoFactorAuth: checked,
+                              })
+                            }
                           />
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <Lock className="h-5 w-5 text-gray-600" />
                             <div>
-                              <p className="font-medium">Strong Password Requirements</p>
+                              <p className="font-medium">
+                                Strong Password Requirements
+                              </p>
                               <p className="text-sm text-gray-600">
                                 Enforce complex password policies
                               </p>
@@ -308,7 +343,12 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.requireStrongPassword}
-                            onCheckedChange={(checked) => setSettings({...settings, requireStrongPassword: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({
+                                ...settings,
+                                requireStrongPassword: checked,
+                              })
+                            }
                           />
                         </div>
                       </div>
@@ -338,10 +378,15 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.emailNotifications}
-                            onCheckedChange={(checked) => setSettings({...settings, emailNotifications: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({
+                                ...settings,
+                                emailNotifications: checked,
+                              })
+                            }
                           />
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <Bell className="h-5 w-5 text-gray-600" />
@@ -354,7 +399,12 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.smsNotifications}
-                            onCheckedChange={(checked) => setSettings({...settings, smsNotifications: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({
+                                ...settings,
+                                smsNotifications: checked,
+                              })
+                            }
                           />
                         </div>
                       </div>
@@ -373,20 +423,34 @@ const Page: React.FC = () => {
                     <CardContent className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="dataRetention">Data Retention (days)</Label>
+                          <Label htmlFor="dataRetention">
+                            Data Retention (days)
+                          </Label>
                           <Input
                             id="dataRetention"
                             type="number"
                             value={settings.dataRetention}
-                            onChange={(e) => setSettings({...settings, dataRetention: parseInt(e.target.value)})}
+                            onChange={e =>
+                              setSettings({
+                                ...settings,
+                                dataRetention: parseInt(e.target.value),
+                              })
+                            }
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="backupFrequency">Backup Frequency</Label>
+                          <Label htmlFor="backupFrequency">
+                            Backup Frequency
+                          </Label>
                           <select
                             id="backupFrequency"
                             value={settings.backupFrequency}
-                            onChange={(e) => setSettings({...settings, backupFrequency: e.target.value})}
+                            onChange={e =>
+                              setSettings({
+                                ...settings,
+                                backupFrequency: e.target.value,
+                              })
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                           >
                             <option value="daily">Daily</option>
@@ -395,7 +459,7 @@ const Page: React.FC = () => {
                           </select>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
@@ -409,10 +473,12 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.autoBackup}
-                            onCheckedChange={(checked) => setSettings({...settings, autoBackup: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({ ...settings, autoBackup: checked })
+                            }
                           />
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <AlertTriangle className="h-5 w-5 text-gray-600" />
@@ -425,10 +491,15 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.errorReporting}
-                            onCheckedChange={(checked) => setSettings({...settings, errorReporting: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({
+                                ...settings,
+                                errorReporting: checked,
+                              })
+                            }
                           />
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <Settings className="h-5 w-5 text-gray-600" />
@@ -441,7 +512,9 @@ const Page: React.FC = () => {
                           </div>
                           <Switch
                             checked={settings.debugMode}
-                            onCheckedChange={(checked) => setSettings({...settings, debugMode: checked})}
+                            onCheckedChange={checked =>
+                              setSettings({ ...settings, debugMode: checked })
+                            }
                           />
                         </div>
                       </div>
@@ -453,7 +526,7 @@ const Page: React.FC = () => {
                   <ActivityFeed
                     activities={adminActivityData}
                     title="Recent Activity"
-                    onViewAll={() => console.log("View all activity")}
+                    onViewAll={() => console.log('View all activity')}
                   />
                 </TabsContent>
               </Tabs>

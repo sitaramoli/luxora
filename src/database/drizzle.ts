@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
-import config from "@/lib/config";
-import { performanceMonitor } from "@/lib/performance";
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+import config from '@/lib/config';
+import { performanceMonitor } from '@/lib/performance';
 
 // Create optimized database connection
 const sql = neon(config.env.databaseUrl, {
@@ -11,7 +11,7 @@ const sql = neon(config.env.databaseUrl, {
 });
 
 // Create drizzle instance with optimizations
-export const db = drizzle({ 
+export const db = drizzle({
   client: sql,
   // Enable query logging in development
   logger: process.env.NODE_ENV === 'development',

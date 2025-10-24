@@ -1,5 +1,6 @@
-import React from "react";
-import { PageLoader } from "@/components/PageLoader";
+import React from 'react';
+
+import { PageLoader } from '@/components/PageLoader';
 
 const Loading = () => {
   return <PageLoader isLoading={true} />;

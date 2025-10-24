@@ -1,33 +1,36 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Eye, 
-  TrendingUp, 
-  Users, 
-  ShoppingCart, 
+import {
+  Eye,
+  TrendingUp,
+  Users,
+  ShoppingCart,
   DollarSign,
   Activity,
   BarChart3,
-  PieChart
-} from "lucide-react";
-import { useSession } from "next-auth/react";
-import { pendingMerchants, recentOrders, stats } from "@/constants/admin-data";
-import { getPaymentStatusColor, getStatusColor } from "@/lib/utils";
-import { StatCard } from "@/components/dashboard/StatCard";
-import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import { QuickActions, getAdminQuickActions } from "@/components/dashboard/QuickActions";
-import { 
-  RevenueChart, 
-  OrdersChart, 
-  SalesDistributionChart, 
+  PieChart,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import React from 'react';
+
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import {
+  RevenueChart,
+  OrdersChart,
+  SalesDistributionChart,
   TopProductsChart,
-  GrowthTrendChart
-} from "@/components/dashboard/ChartComponents";
+  GrowthTrendChart,
+} from '@/components/dashboard/ChartComponents';
+import {
+  QuickActions,
+  getAdminQuickActions,
+} from '@/components/dashboard/QuickActions';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { pendingMerchants, recentOrders } from '@/constants/admin-data';
 import {
   revenueData,
   ordersData,
@@ -36,8 +39,9 @@ import {
   growthTrendData,
   adminActivityData,
   miniChartData,
-  realTimeMetrics
-} from "@/constants/dashboard-data";
+  realTimeMetrics,
+} from '@/constants/dashboard-data';
+import { getPaymentStatusColor, getStatusColor } from '@/lib/utils';
 
 const Page: React.FC = () => {
   const router = useRouter();
@@ -79,7 +83,8 @@ const Page: React.FC = () => {
                 Admin Dashboard
               </h1>
               <p className="text-gray-600">
-                Welcome back, {data?.user.name}. Here's what's happening with Luxora today.
+                Welcome back, {data?.user.name}. Here's what's happening with
+                Luxora today.
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -128,7 +133,7 @@ const Page: React.FC = () => {
             chartData={miniChartData.customers}
             color="#8B5CF6"
             subtitle="Online now"
-            badge={{ text: "Live", variant: "default" }}
+            badge={{ text: 'Live', variant: 'default' }}
           />
           <StatCard
             title="Growth Rate"
@@ -239,7 +244,7 @@ const Page: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push("/admin/orders")}
+                  onClick={() => router.push('/admin/orders')}
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   View All
@@ -248,7 +253,7 @@ const Page: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentOrders.map((order) => (
+                {recentOrders.map(order => (
                   <div
                     key={order.id}
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -287,7 +292,7 @@ const Page: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push("/admin/merchants")}
+                onClick={() => router.push('/admin/merchants')}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Review All
@@ -296,7 +301,7 @@ const Page: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {pendingMerchants.map((merchant) => (
+              {pendingMerchants.map(merchant => (
                 <div
                   key={merchant.id}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -307,12 +312,10 @@ const Page: React.FC = () => {
                         {merchant.name}
                       </span>
                       <Badge className={getStatusColor(merchant.status)}>
-                        {merchant.status.replace("_", " ")}
+                        {merchant.status.replace('_', ' ')}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      {merchant.category}
-                    </p>
+                    <p className="text-sm text-gray-600">{merchant.category}</p>
                     <p className="text-xs text-gray-500">
                       Submitted: {merchant.submittedDate}
                     </p>

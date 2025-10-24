@@ -1,26 +1,27 @@
-import React from "react";
-import HeroSection from "@/components/HeroSection";
-import FeaturedProducts from "@/components/FeaturedProducts";
-import FeaturedBrands from "@/components/FeaturedBrands";
-import PromotionBanner from "@/components/PromotionBanner";
-import FeaturesSection from "@/components/FeaturesSection";
-import Testimonials from "@/components/Testimonials";
+import React from 'react';
+
+import FeaturedBrands from '@/components/FeaturedBrands';
+import LuxuryExclusiveBanner from '@/components/LuxuryExclusiveBanner';
+import LuxuryFeaturedProductsServer from '@/components/LuxuryFeaturedProductsServer';
+import LuxuryFeaturesSection from '@/components/LuxuryFeaturesSection';
+import LuxuryTestimonials from '@/components/LuxuryTestimonials';
+import RevolutionaryHeroSection from '@/components/RevolutionaryHeroSection';
 
 const Page = () => {
   return (
     <>
-      <HeroSection
+      <RevolutionaryHeroSection
         title="Luxury Redefined"
         subtitle="Discover exclusive collections from the world's most prestigious brands"
         backgroundImage="/images/Hero.jpg"
         ctaText="Explore Collection"
         ctaLink="/products"
       />
-      <FeaturesSection />
-      <FeaturedProducts />
-      <PromotionBanner />
+      <LuxuryFeaturesSection />
+      <LuxuryFeaturedProductsServer />
+      <LuxuryExclusiveBanner />
       <FeaturedBrands />
-      <Testimonials />
+      <LuxuryTestimonials />
     </>
   );
 };

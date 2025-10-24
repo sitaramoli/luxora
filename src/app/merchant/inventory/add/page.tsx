@@ -1,17 +1,5 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   Upload,
@@ -23,38 +11,51 @@ import {
   Plus,
   DollarSign,
   Archive,
-} from "lucide-react";
-import { addProduct, uploadImages } from "@/lib/services/products";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { NewProduct } from "@/database/schema";
-import { Switch } from "@/components/ui/switch";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { toast } from 'sonner';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import type { NewProduct } from '@/database/schema';
+import { addProduct, uploadImages } from '@/lib/services/products';
 
 const AddProductPage: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productData, setProductData] = useState({
-    name: "",
-    description: "",
-    shortDescription: "",
-    category: "",
-    price: "",
-    originalPrice: "",
-    sku: "",
-    barcode: "",
-    weight: "",
+    name: '',
+    description: '',
+    shortDescription: '',
+    category: '',
+    price: '',
+    originalPrice: '',
+    sku: '',
+    barcode: '',
+    weight: '',
     dimensions: {
-      length: "",
-      width: "",
-      height: "",
+      length: '',
+      width: '',
+      height: '',
     },
-    stockCount: "",
-    minStock: "",
-    maxStock: "",
-    status: "DRAFT",
+    stockCount: '',
+    minStock: '',
+    maxStock: '',
+    status: 'DRAFT',
     tags: [] as string[],
     sizes: [] as string[],
     colors: [] as { name: string; value: string }[],
@@ -64,17 +65,17 @@ const AddProductPage: React.FC = () => {
     isFeatured: false,
   });
 
-  const [newTag, setNewTag] = useState("");
-  const [newSize, setNewSize] = useState("");
-  const [newColor, setNewColor] = useState({ name: "", value: "#000000" });
-  const [newFeature, setNewFeature] = useState("");
+  const [newTag, setNewTag] = useState('');
+  const [newSize, setNewSize] = useState('');
+  const [newColor, setNewColor] = useState({ name: '', value: '#000000' });
+  const [newFeature, setNewFeature] = useState('');
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    if (field.includes(".")) {
-      const keys = field.split(".");
+    if (field.includes('.')) {
+      const keys = field.split('.');
 
-      setProductData((prev) => {
+      setProductData(prev => {
         const updated = { ...prev };
         let current: any = updated;
 
@@ -82,7 +83,7 @@ const AddProductPage: React.FC = () => {
           const key = keys[i];
           if (
             !(key in current) ||
-            typeof current[key] !== "object" ||
+            typeof current[key] !== 'object' ||
             current[key] === null
           ) {
             current[key] = {};
@@ -94,58 +95,58 @@ const AddProductPage: React.FC = () => {
         return updated;
       });
     } else {
-      setProductData((prev) => ({ ...prev, [field]: value }));
+      setProductData(prev => ({ ...prev, [field]: value }));
     }
   };
 
   const addTag = () => {
     if (newTag.trim() && !productData.tags.includes(newTag.trim())) {
-      setProductData((prev) => ({
+      setProductData(prev => ({
         ...prev,
         tags: [...prev.tags, newTag.trim()],
       }));
-      setNewTag("");
+      setNewTag('');
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    setProductData((prev) => ({
+    setProductData(prev => ({
       ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+      tags: prev.tags.filter(tag => tag !== tagToRemove),
     }));
   };
 
   const addSize = () => {
     if (newSize.trim() && !productData.sizes.includes(newSize.trim())) {
-      setProductData((prev) => ({
+      setProductData(prev => ({
         ...prev,
         sizes: [...prev.sizes, newSize.trim()],
       }));
-      setNewSize("");
+      setNewSize('');
     }
   };
 
   const removeSize = (sizeToRemove: string) => {
-    setProductData((prev) => ({
+    setProductData(prev => ({
       ...prev,
-      sizes: prev.sizes.filter((size) => size !== sizeToRemove),
+      sizes: prev.sizes.filter(size => size !== sizeToRemove),
     }));
   };
 
   const addColor = () => {
     if (newColor.name.trim()) {
-      setProductData((prev) => ({
+      setProductData(prev => ({
         ...prev,
         colors: [...prev.colors, { ...newColor }],
       }));
-      setNewColor({ name: "", value: "#000000" });
+      setNewColor({ name: '', value: '#000000' });
     }
   };
 
   const removeColor = (colorToRemove: { name: string; value: string }) => {
-    setProductData((prev) => ({
+    setProductData(prev => ({
       ...prev,
-      colors: prev.colors.filter((color) => color.name !== colorToRemove.name),
+      colors: prev.colors.filter(color => color.name !== colorToRemove.name),
     }));
   };
 
@@ -154,52 +155,52 @@ const AddProductPage: React.FC = () => {
       newFeature.trim() &&
       !productData.features.includes(newFeature.trim())
     ) {
-      setProductData((prev) => ({
+      setProductData(prev => ({
         ...prev,
         features: [...prev.features, newFeature.trim()],
       }));
-      setNewFeature("");
+      setNewFeature('');
     }
   };
 
   const removeFeature = (featureToRemove: string) => {
-    setProductData((prev) => ({
+    setProductData(prev => ({
       ...prev,
-      features: prev.features.filter((feature) => feature !== featureToRemove),
+      features: prev.features.filter(feature => feature !== featureToRemove),
     }));
   };
 
   const handleFileSelection = (files: FileList) => {
     const newFiles = Array.from(files);
-    setSelectedImages((prev) => [...prev, ...newFiles]);
+    setSelectedImages(prev => [...prev, ...newFiles]);
   };
 
   const removeImage = (index: number, isSelectedImage: boolean) => {
     if (isSelectedImage) {
-      setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+      setSelectedImages(prev => prev.filter((_, i) => i !== index));
     } else {
-      setProductData((prev) => ({
+      setProductData(prev => ({
         ...prev,
         images: prev.images.filter((_, i) => i !== index),
       }));
     }
   };
 
-  const handleSubmit = async (status: "ACTIVE" | "DRAFT" | "ARCHIVED") => {
+  const handleSubmit = async (status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED') => {
     setIsSubmitting(true);
-    let uploadedImageUrls: string[] = [...productData.images];
+    const uploadedImageUrls: string[] = [...productData.images];
 
     if (selectedImages.length > 0) {
       const formData = new FormData();
-      selectedImages.forEach((file) => {
-        formData.append("images", file);
+      selectedImages.forEach(file => {
+        formData.append('images', file);
       });
 
       const uploadResult = await uploadImages(formData, productData.name);
 
       if (!uploadResult.success || !uploadResult.urls) {
-        toast.error("Image Upload Failed", {
-          description: uploadResult.error || "Could not upload images.",
+        toast.error('Image Upload Failed', {
+          description: uploadResult.error || 'Could not upload images.',
         });
         setIsSubmitting(false);
         return;
@@ -208,19 +209,19 @@ const AddProductPage: React.FC = () => {
     }
 
     try {
-      const preparedData: Omit<NewProduct, "merchantId"> = {
+      const preparedData: Omit<NewProduct, 'merchantId'> = {
         name: productData.name,
         description: productData.description,
         shortDescription: productData.shortDescription || null,
         category: productData.category,
         sku: productData.sku,
         barcode: productData.barcode || null,
-        status: status,
+        status,
         // Convert strings from inputs to the correct data types
-        price: productData.price ? productData.price.toString() : "0.00",
+        price: productData.price ? productData.price.toString() : '0.00',
         originalPrice: productData.originalPrice
           ? productData.originalPrice.toString()
-          : "0.00",
+          : '0.00',
         stockCount: parseInt(productData.stockCount, 10) || 0,
         minStock: parseInt(productData.minStock, 10) || 0,
         maxStock: parseInt(productData.maxStock, 10) || 0,
@@ -250,19 +251,19 @@ const AddProductPage: React.FC = () => {
       const result = await addProduct(preparedData as NewProduct);
 
       if (result.success) {
-        toast.success("Success", {
-          description: "Your new product is now live",
+        toast.success('Success', {
+          description: 'Your new product is now live',
         });
-        router.push("/merchant/inventory"); // Redirect on success
+        router.push('/merchant/inventory'); // Redirect on success
       } else {
-        toast.error("Error", {
-          description: "Failed to Save Product",
+        toast.error('Error', {
+          description: 'Failed to Save Product',
         });
       }
     } catch (error) {
-      console.error("Error submitting product:", error);
-      toast.error("Error", {
-        description: "An unexpected error occurred on the client.",
+      console.error('Error submitting product:', error);
+      toast.error('Error', {
+        description: 'An unexpected error occurred on the client.',
       });
     } finally {
       setIsSubmitting(false);
@@ -270,14 +271,14 @@ const AddProductPage: React.FC = () => {
   };
 
   const categories = [
-    "Clothing",
-    "Bags",
-    "Shoes",
-    "Jewelry",
-    "Watches",
-    "Accessories",
-    "Beauty",
-    "Home & Decor",
+    'Clothing',
+    'Bags',
+    'Shoes',
+    'Jewelry',
+    'Watches',
+    'Accessories',
+    'Beauty',
+    'Home & Decor',
   ];
 
   return (
@@ -322,8 +323,8 @@ const AddProductPage: React.FC = () => {
                         <Input
                           id="name"
                           value={productData.name}
-                          onChange={(e) =>
-                            handleInputChange("name", e.target.value)
+                          onChange={e =>
+                            handleInputChange('name', e.target.value)
                           }
                           placeholder="Enter product name"
                           required
@@ -333,15 +334,15 @@ const AddProductPage: React.FC = () => {
                         <Label htmlFor="category">Category *</Label>
                         <Select
                           value={productData.category}
-                          onValueChange={(value) =>
-                            handleInputChange("category", value)
+                          onValueChange={value =>
+                            handleInputChange('category', value)
                           }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            {categories.map((category) => (
+                            {categories.map(category => (
                               <SelectItem
                                 key={category}
                                 value={category.toLowerCase()}
@@ -361,8 +362,8 @@ const AddProductPage: React.FC = () => {
                       <Input
                         id="shortDescription"
                         value={productData.shortDescription}
-                        onChange={(e) =>
-                          handleInputChange("shortDescription", e.target.value)
+                        onChange={e =>
+                          handleInputChange('shortDescription', e.target.value)
                         }
                         placeholder="Brief product description for listings"
                       />
@@ -373,8 +374,8 @@ const AddProductPage: React.FC = () => {
                       <Textarea
                         id="description"
                         value={productData.description}
-                        onChange={(e) =>
-                          handleInputChange("description", e.target.value)
+                        onChange={e =>
+                          handleInputChange('description', e.target.value)
                         }
                         placeholder="Detailed product description"
                         rows={6}
@@ -392,8 +393,8 @@ const AddProductPage: React.FC = () => {
                             type="number"
                             min={0}
                             value={productData.price}
-                            onChange={(e) =>
-                              handleInputChange("price", e.target.value)
+                            onChange={e =>
+                              handleInputChange('price', e.target.value)
                             }
                             placeholder="0.00"
                             className="pl-10"
@@ -412,8 +413,8 @@ const AddProductPage: React.FC = () => {
                             type="number"
                             min={0}
                             value={productData.originalPrice}
-                            onChange={(e) =>
-                              handleInputChange("originalPrice", e.target.value)
+                            onChange={e =>
+                              handleInputChange('originalPrice', e.target.value)
                             }
                             placeholder="0.00"
                             className="pl-10"
@@ -427,8 +428,8 @@ const AddProductPage: React.FC = () => {
                         <Label htmlFor="onSale">On Sale (Optional)</Label>
                         <Switch
                           checked={productData.onSale}
-                          onCheckedChange={(checked) =>
-                            handleInputChange("onSale", checked)
+                          onCheckedChange={checked =>
+                            handleInputChange('onSale', checked)
                           }
                         />
                       </div>
@@ -438,8 +439,8 @@ const AddProductPage: React.FC = () => {
                         </Label>
                         <Switch
                           checked={productData.isFeatured}
-                          onCheckedChange={(checked) =>
-                            handleInputChange("isFeatured", checked)
+                          onCheckedChange={checked =>
+                            handleInputChange('isFeatured', checked)
                           }
                         />
                       </div>
@@ -464,16 +465,16 @@ const AddProductPage: React.FC = () => {
                         <div className="flex gap-2 mb-3">
                           <Input
                             value={newSize}
-                            onChange={(e) => setNewSize(e.target.value)}
+                            onChange={e => setNewSize(e.target.value)}
                             placeholder="Add size (e.g., S, M, L)"
-                            onKeyDown={(e) => e.key === "Enter" && addSize()}
+                            onKeyDown={e => e.key === 'Enter' && addSize()}
                           />
                           <Button onClick={addSize} type="button">
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {productData.sizes.map((size) => (
+                          {productData.sizes.map(size => (
                             <Badge
                               key={size}
                               variant="secondary"
@@ -497,8 +498,8 @@ const AddProductPage: React.FC = () => {
                         <div className="flex gap-2 mb-3">
                           <Input
                             value={newColor.name}
-                            onChange={(e) =>
-                              setNewColor((prev) => ({
+                            onChange={e =>
+                              setNewColor(prev => ({
                                 ...prev,
                                 name: e.target.value,
                               }))
@@ -508,8 +509,8 @@ const AddProductPage: React.FC = () => {
                           <input
                             type="color"
                             value={newColor.value}
-                            onChange={(e) =>
-                              setNewColor((prev) => ({
+                            onChange={e =>
+                              setNewColor(prev => ({
                                 ...prev,
                                 value: e.target.value,
                               }))
@@ -521,7 +522,7 @@ const AddProductPage: React.FC = () => {
                           </Button>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {productData.colors.map((color) => (
+                          {productData.colors.map(color => (
                             <Badge
                               key={color.name}
                               variant="secondary"
@@ -549,16 +550,16 @@ const AddProductPage: React.FC = () => {
                         <div className="flex gap-2 mb-3">
                           <Input
                             value={newFeature}
-                            onChange={(e) => setNewFeature(e.target.value)}
+                            onChange={e => setNewFeature(e.target.value)}
                             placeholder="Add product feature"
-                            onKeyDown={(e) => e.key === "Enter" && addFeature()}
+                            onKeyDown={e => e.key === 'Enter' && addFeature()}
                           />
                           <Button onClick={addFeature} type="button">
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
                         <div className="space-y-2">
-                          {productData.features.map((feature) => (
+                          {productData.features.map(feature => (
                             <div
                               key={feature}
                               className="flex items-center justify-between p-2 bg-gray-50 rounded"
@@ -587,8 +588,8 @@ const AddProductPage: React.FC = () => {
                           <Input
                             id="sku"
                             value={productData.sku}
-                            onChange={(e) =>
-                              handleInputChange("sku", e.target.value)
+                            onChange={e =>
+                              handleInputChange('sku', e.target.value)
                             }
                             placeholder="Product SKU"
                           />
@@ -598,8 +599,8 @@ const AddProductPage: React.FC = () => {
                           <Input
                             id="barcode"
                             value={productData.barcode}
-                            onChange={(e) =>
-                              handleInputChange("barcode", e.target.value)
+                            onChange={e =>
+                              handleInputChange('barcode', e.target.value)
                             }
                             placeholder="Product barcode"
                           />
@@ -613,8 +614,8 @@ const AddProductPage: React.FC = () => {
                           type="number"
                           min={0}
                           value={productData.weight}
-                          onChange={(e) =>
-                            handleInputChange("weight", e.target.value)
+                          onChange={e =>
+                            handleInputChange('weight', e.target.value)
                           }
                           placeholder="0.0"
                           step="0.1"
@@ -633,10 +634,10 @@ const AddProductPage: React.FC = () => {
                               type="number"
                               min={0}
                               value={productData.dimensions.length}
-                              onChange={(e) =>
+                              onChange={e =>
                                 handleInputChange(
-                                  "dimensions.length",
-                                  e.target.value,
+                                  'dimensions.length',
+                                  e.target.value
                                 )
                               }
                               placeholder="0"
@@ -649,10 +650,10 @@ const AddProductPage: React.FC = () => {
                               type="number"
                               min={0}
                               value={productData.dimensions.width}
-                              onChange={(e) =>
+                              onChange={e =>
                                 handleInputChange(
-                                  "dimensions.width",
-                                  e.target.value,
+                                  'dimensions.width',
+                                  e.target.value
                                 )
                               }
                               placeholder="0"
@@ -665,10 +666,10 @@ const AddProductPage: React.FC = () => {
                               type="number"
                               min={0}
                               value={productData.dimensions.height}
-                              onChange={(e) =>
+                              onChange={e =>
                                 handleInputChange(
-                                  "dimensions.height",
-                                  e.target.value,
+                                  'dimensions.height',
+                                  e.target.value
                                 )
                               }
                               placeholder="0"
@@ -695,8 +696,8 @@ const AddProductPage: React.FC = () => {
                           min={0}
                           type="number"
                           value={productData.stockCount}
-                          onChange={(e) =>
-                            handleInputChange("stockCount", e.target.value)
+                          onChange={e =>
+                            handleInputChange('stockCount', e.target.value)
                           }
                           placeholder="0"
                           required
@@ -709,8 +710,8 @@ const AddProductPage: React.FC = () => {
                           min={0}
                           type="number"
                           value={productData.minStock}
-                          onChange={(e) =>
-                            handleInputChange("minStock", e.target.value)
+                          onChange={e =>
+                            handleInputChange('minStock', e.target.value)
                           }
                           placeholder="0"
                         />
@@ -722,8 +723,8 @@ const AddProductPage: React.FC = () => {
                           type="number"
                           min={0}
                           value={productData.maxStock}
-                          onChange={(e) =>
-                            handleInputChange("maxStock", e.target.value)
+                          onChange={e =>
+                            handleInputChange('maxStock', e.target.value)
                           }
                           placeholder="0"
                         />
@@ -737,16 +738,16 @@ const AddProductPage: React.FC = () => {
                       <div className="flex gap-2 mb-3">
                         <Input
                           value={newTag}
-                          onChange={(e) => setNewTag(e.target.value)}
+                          onChange={e => setNewTag(e.target.value)}
                           placeholder="Add tag"
-                          onKeyDown={(e) => e.key === "Enter" && addTag()}
+                          onKeyDown={e => e.key === 'Enter' && addTag()}
                         />
                         <Button onClick={addTag} type="button">
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {productData.tags.map((tag) => (
+                        {productData.tags.map(tag => (
                           <Badge
                             key={tag}
                             variant="secondary"
@@ -776,7 +777,7 @@ const AddProductPage: React.FC = () => {
                       <label
                         htmlFor="productImages"
                         className={`cursor-pointer flex flex-col items-center ${
-                          isSubmitting ? "opacity-50 pointer-events-none" : ""
+                          isSubmitting ? 'opacity-50 pointer-events-none' : ''
                         }`}
                       >
                         <input
@@ -785,7 +786,7 @@ const AddProductPage: React.FC = () => {
                           multiple
                           accept="image/*"
                           className="hidden"
-                          onChange={(e) =>
+                          onChange={e =>
                             e.target.files &&
                             handleFileSelection(e.target.files)
                           }
@@ -868,7 +869,7 @@ const AddProductPage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button
-                    onClick={() => handleSubmit("DRAFT")}
+                    onClick={() => handleSubmit('DRAFT')}
                     variant="outline"
                     className="w-full"
                     disabled={isSubmitting}
@@ -877,7 +878,7 @@ const AddProductPage: React.FC = () => {
                     Save as Draft
                   </Button>
                   <Button
-                    onClick={() => handleSubmit("ARCHIVED")}
+                    onClick={() => handleSubmit('ARCHIVED')}
                     variant="outline"
                     className="w-full"
                     disabled={isSubmitting}
@@ -886,12 +887,12 @@ const AddProductPage: React.FC = () => {
                     Save as Archive
                   </Button>
                   <Button
-                    onClick={() => handleSubmit("ACTIVE")}
+                    onClick={() => handleSubmit('ACTIVE')}
                     className="w-full bg-black text-white hover:bg-gray-800"
                     disabled={isSubmitting}
                   >
                     <Package className="h-4 w-4 mr-2" />
-                    {isSubmitting ? "Publishing..." : "Publish Product"}
+                    {isSubmitting ? 'Publishing...' : 'Publish Product'}
                   </Button>
                 </CardContent>
               </Card>

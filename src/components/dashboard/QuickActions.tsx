@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Plus, 
-  Users, 
-  Package, 
-  Settings, 
-  BarChart3, 
+import {
+  Plus,
+  Users,
+  Package,
+  Settings,
+  BarChart3,
   FileText,
   Bell,
   Download,
   Upload,
-  Eye
+  Eye,
 } from 'lucide-react';
 
 interface QuickAction {
@@ -34,7 +34,7 @@ interface QuickActionsProps {
 
 export const QuickActions: React.FC<QuickActionsProps> = ({
   actions,
-  title = "Quick Actions",
+  title = 'Quick Actions',
   columns = 3,
 }) => {
   const getGridCols = () => {
@@ -60,18 +60,20 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       </CardHeader>
       <CardContent>
         <div className={`grid ${getGridCols()} gap-4`}>
-          {actions.map((action) => (
+          {actions.map(action => (
             <Button
               key={action.id}
               variant={action.variant || 'outline'}
               className="h-auto p-4 flex flex-col items-center gap-2 hover:shadow-md transition-all duration-200"
               onClick={action.onClick}
             >
-              <div 
+              <div
                 className="p-2 rounded-lg"
-                style={{ 
-                  backgroundColor: action.color ? `${action.color}20` : undefined,
-                  color: action.color || undefined
+                style={{
+                  backgroundColor: action.color
+                    ? `${action.color}20`
+                    : undefined,
+                  color: action.color || undefined,
                 }}
               >
                 {action.icon}
@@ -91,7 +93,9 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 };
 
 // Predefined action sets for different user types
-export const getAdminQuickActions = (onAction: (action: string) => void): QuickAction[] => [
+export const getAdminQuickActions = (
+  onAction: (action: string) => void
+): QuickAction[] => [
   {
     id: 'add-merchant',
     title: 'Add Merchant',
@@ -142,7 +146,9 @@ export const getAdminQuickActions = (onAction: (action: string) => void): QuickA
   },
 ];
 
-export const getMerchantQuickActions = (onAction: (action: string) => void): QuickAction[] => [
+export const getMerchantQuickActions = (
+  onAction: (action: string) => void
+): QuickAction[] => [
   {
     id: 'add-product',
     title: 'Add Product',

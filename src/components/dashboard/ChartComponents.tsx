@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -47,7 +47,7 @@ const CHART_COLORS = [
 ];
 
 // Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = memo(({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
@@ -61,7 +61,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     );
   }
   return null;
-};
+});
+
+CustomTooltip.displayName = 'CustomTooltip';
 
 // Revenue Chart Component
 interface RevenueChartProps {
@@ -73,11 +75,14 @@ interface RevenueChartProps {
   }>;
 }
 
-export const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => {
+export const RevenueChart: React.FC<RevenueChartProps> = memo(({ data }) => {
   return (
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+        <AreaChart
+          data={data}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.8} />
@@ -99,7 +104,9 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => {
       </ResponsiveContainer>
     </div>
   );
-};
+});
+
+RevenueChart.displayName = 'RevenueChart';
 
 // Orders Chart Component
 interface OrdersChartProps {
@@ -111,11 +118,14 @@ interface OrdersChartProps {
   }>;
 }
 
-export const OrdersChart: React.FC<OrdersChartProps> = ({ data }) => {
+export const OrdersChart: React.FC<OrdersChartProps> = memo(({ data }) => {
   return (
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+        <LineChart
+          data={data}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="day" />
           <YAxis />
@@ -146,7 +156,9 @@ export const OrdersChart: React.FC<OrdersChartProps> = ({ data }) => {
       </ResponsiveContainer>
     </div>
   );
-};
+});
+
+OrdersChart.displayName = 'OrdersChart';
 
 // Sales Distribution Chart
 interface SalesDistributionProps {
@@ -157,31 +169,40 @@ interface SalesDistributionProps {
   }>;
 }
 
-export const SalesDistributionChart: React.FC<SalesDistributionProps> = ({ data }) => {
-  return (
-    <div className="h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
-            outerRadius={80}
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
+export const SalesDistributionChart: React.FC<SalesDistributionProps> = memo(
+  ({ data }) => {
+    return (
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={({ name, percent }: { name: string; percent: number }) =>
+                `${name} ${(percent * 100).toFixed(0)}%`
+              }
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={CHART_COLORS[index % CHART_COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+);
+
+SalesDistributionChart.displayName = 'SalesDistributionChart';
 
 // Top Products Chart
 interface TopProductsProps {
@@ -192,11 +213,14 @@ interface TopProductsProps {
   }>;
 }
 
-export const TopProductsChart: React.FC<TopProductsProps> = ({ data }) => {
+export const TopProductsChart: React.FC<TopProductsProps> = memo(({ data }) => {
   return (
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <BarChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
@@ -206,7 +230,9 @@ export const TopProductsChart: React.FC<TopProductsProps> = ({ data }) => {
       </ResponsiveContainer>
     </div>
   );
-};
+});
+
+TopProductsChart.displayName = 'TopProductsChart';
 
 // Performance Metrics Chart
 interface PerformanceMetricsProps {
@@ -217,22 +243,32 @@ interface PerformanceMetricsProps {
   }>;
 }
 
-export const PerformanceMetricsChart: React.FC<PerformanceMetricsProps> = ({ data }) => {
-  return (
-    <div className="h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="80%" data={data}>
-          <RadialBar
-            dataKey="value"
-            cornerRadius={10}
-            fill={COLORS.primary}
-          />
-          <Tooltip />
-        </RadialBarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
+export const PerformanceMetricsChart: React.FC<PerformanceMetricsProps> = memo(
+  ({ data }) => {
+    return (
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadialBarChart
+            cx="50%"
+            cy="50%"
+            innerRadius="20%"
+            outerRadius="80%"
+            data={data}
+          >
+            <RadialBar
+              dataKey="value"
+              cornerRadius={10}
+              fill={COLORS.primary}
+            />
+            <Tooltip />
+          </RadialBarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+);
+
+PerformanceMetricsChart.displayName = 'PerformanceMetricsChart';
 
 // Customer Satisfaction Chart
 interface CustomerSatisfactionProps {
@@ -243,21 +279,28 @@ interface CustomerSatisfactionProps {
   }>;
 }
 
-export const CustomerSatisfactionChart: React.FC<CustomerSatisfactionProps> = ({ data }) => {
-  return (
-    <div className="h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="horizontal" margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" />
-          <YAxis dataKey="rating" type="category" />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="count" fill={COLORS.success} radius={[0, 4, 4, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
+export const CustomerSatisfactionChart: React.FC<CustomerSatisfactionProps> =
+  memo(({ data }) => {
+    return (
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            layout="horizontal"
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis type="number" />
+            <YAxis dataKey="rating" type="category" />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey="count" fill={COLORS.success} radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  });
+
+CustomerSatisfactionChart.displayName = 'CustomerSatisfactionChart';
 
 // Growth Trend Chart
 interface GrowthTrendProps {
@@ -268,11 +311,14 @@ interface GrowthTrendProps {
   }>;
 }
 
-export const GrowthTrendChart: React.FC<GrowthTrendProps> = ({ data }) => {
+export const GrowthTrendChart: React.FC<GrowthTrendProps> = memo(({ data }) => {
   return (
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+        <LineChart
+          data={data}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="period" />
           <YAxis />
@@ -297,7 +343,9 @@ export const GrowthTrendChart: React.FC<GrowthTrendProps> = ({ data }) => {
       </ResponsiveContainer>
     </div>
   );
-};
+});
+
+GrowthTrendChart.displayName = 'GrowthTrendChart';
 
 // Mini Chart Component for Stats Cards
 interface MiniChartProps {
@@ -306,44 +354,50 @@ interface MiniChartProps {
   type?: 'line' | 'area';
 }
 
-export const MiniChart: React.FC<MiniChartProps> = ({ 
-  data, 
-  color = COLORS.primary, 
-  type = 'line' 
-}) => {
-  return (
-    <div className="h-12 w-20">
-      <ResponsiveContainer width="100%" height="100%">
-        {type === 'area' ? (
-          <AreaChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-            <defs>
-              <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={color} stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke={color}
-              fill="url(#miniGradient)"
-              strokeWidth={2}
-              dot={false}
-            />
-          </AreaChart>
-        ) : (
-          <LineChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke={color}
-              fill="none"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        )}
-      </ResponsiveContainer>
-    </div>
-  );
-};
+export const MiniChart: React.FC<MiniChartProps> = memo(
+  ({ data, color = COLORS.primary, type = 'line' }) => {
+    return (
+      <div className="h-12 w-20">
+        <ResponsiveContainer width="100%" height="100%">
+          {type === 'area' ? (
+            <AreaChart
+              data={data}
+              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+            >
+              <defs>
+                <linearGradient id="miniGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={color}
+                fill="url(#miniGradient)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </AreaChart>
+          ) : (
+            <LineChart
+              data={data}
+              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+            >
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke={color}
+                fill="none"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          )}
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+);
+
+MiniChart.displayName = 'MiniChart';

@@ -1,41 +1,45 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import React, { ReactNode } from "react";
-import { Toaster } from "sonner";
-import { SessionProvider } from "next-auth/react";
-import { auth } from "@/auth";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { SessionProvider } from 'next-auth/react';
+import React from 'react';
+import { Toaster } from 'sonner';
+
+import { auth } from '@/auth';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
   display: 'swap',
   preload: true,
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
   display: 'swap',
   preload: true,
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Luxora - Luxury Fashion & Lifestyle",
-    template: "%s | Luxora"
+    default: 'Luxora - Luxury Fashion & Lifestyle',
+    template: '%s | Luxora',
   },
-  description: "Discover premium luxury fashion, accessories, and lifestyle products from the world's most exclusive brands. Shop curated collections of high-end merchandise.",
-  keywords: ["luxury", "fashion", "premium", "brands", "lifestyle", "shopping"],
-  authors: [{ name: "Luxora Team" }],
-  creator: "Luxora",
-  publisher: "Luxora",
+  description:
+    "Discover premium luxury fashion, accessories, and lifestyle products from the world's most exclusive brands. Shop curated collections of high-end merchandise.",
+  keywords: ['luxury', 'fashion', 'premium', 'brands', 'lifestyle', 'shopping'],
+  authors: [{ name: 'Luxora Team' }],
+  creator: 'Luxora',
+  publisher: 'Luxora',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://luxora.com'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || 'https://luxora.com'
+  ),
   alternates: {
     canonical: '/',
   },
@@ -44,13 +48,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     title: 'Luxora - Luxury Fashion & Lifestyle',
-    description: 'Discover premium luxury fashion, accessories, and lifestyle products from the world\'s most exclusive brands.',
+    description:
+      "Discover premium luxury fashion, accessories, and lifestyle products from the world's most exclusive brands.",
     siteName: 'Luxora',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Luxora - Luxury Fashion & Lifestyle',
-    description: 'Discover premium luxury fashion, accessories, and lifestyle products from the world\'s most exclusive brands.',
+    description:
+      "Discover premium luxury fashion, accessories, and lifestyle products from the world's most exclusive brands.",
     creator: '@luxora',
   },
   robots: {
@@ -69,7 +75,7 @@ export const metadata: Metadata = {
   },
 };
 
-const RootLayout = async ({ children }: { children: ReactNode }) => {
+const RootLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
   return (
     <html lang="en">

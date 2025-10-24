@@ -1,53 +1,54 @@
-"use client";
+'use client';
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/components/DataTableColumnHeader";
-import { cn } from "@/lib/utils";
-import { AccountStatus, Merchant } from "@/types";
+import type { ColumnDef } from '@tanstack/react-table';
+import { Eye } from 'lucide-react';
+
+import { DataTableColumnHeader } from '@/components/DataTableColumnHeader';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import { changeMerchantAccountStatus } from "@/lib/services/merchants";
-import { useTransition } from "react";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
-const STATUS_OPTIONS: AccountStatus[] = [
-  "ACTIVE",
-  "PENDING",
-  "UNDER_REVIEW",
-  "SUSPENDED",
-];
+export type AdminMerchantRow = {
+  id: string;
+  name: string;
+  email: string;
+  category: string;
+  status: 'ACTIVE' | 'PENDING' | 'UNDER_REVIEW' | 'SUSPENDED';
+  createdAt: string | Date | null;
+  productCount?: number;
+};
 
-const getClassName = (status: AccountStatus) => {
+const getClassName = (
+  status: 'ACTIVE' | 'PENDING' | 'UNDER_REVIEW' | 'SUSPENDED'
+) => {
   return {
     ACTIVE:
-      "bg-green-100 text-green-800 focus:bg-green-100 focus:text-green-800",
+      'bg-green-100 text-green-800 focus:bg-green-100 focus:text-green-800',
     PENDING:
-      "bg-yellow-100 text-yellow-800 focus:bg-yellow-100 focus:text-yellow-800",
+      'bg-yellow-100 text-yellow-800 focus:bg-yellow-100 focus:text-yellow-800',
     UNDER_REVIEW:
-      "bg-blue-100 text-blue-800 focus:bg-blue-100 focus:text-blue-800",
-    SUSPENDED: "bg-red-100 text-red-800 focus:bg-red-100 focus:text-red-800",
+      'bg-blue-100 text-blue-800 focus:bg-blue-100 focus:text-blue-800',
+    SUSPENDED: 'bg-red-100 text-red-800 focus:bg-red-100 focus:text-red-800',
   }[status];
 };
 
-export const columns: ColumnDef<Merchant>[] = [
+export const columns: ColumnDef<AdminMerchantRow>[] = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
         className="translate-y-[2px]"
       />
@@ -55,7 +56,7 @@ export const columns: ColumnDef<Merchant>[] = [
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        onCheckedChange={value => row.toggleSelected(!!value)}
         aria-label="Select row"
         className="translate-y-[2px]"
       />
@@ -64,7 +65,7 @@ export const columns: ColumnDef<Merchant>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Merchant" />
     ),
@@ -77,7 +78,7 @@ export const columns: ColumnDef<Merchant>[] = [
     },
   },
   {
-    accessorKey: "email",
+    accessorKey: 'email',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email" />
     ),
@@ -90,105 +91,88 @@ export const columns: ColumnDef<Merchant>[] = [
     },
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const currentStatus = row.getValue("status") as AccountStatus;
+      const currentStatus = row.getValue(
+        'status'
+      ) as AdminMerchantRow['status'];
       const className = getClassName(currentStatus);
-      const [isPending, startTransition] = useTransition();
 
-      const handleStatusChange = async (newStatus: AccountStatus) => {
-        const response = await changeMerchantAccountStatus(
-          row.original.id,
-          newStatus,
-        );
-        if (!response.success) {
-          toast.error("Error", {
-            description: response.message,
-          });
-          return;
-        }
-        toast.success("Success", { description: response.message });
-      };
-
+      // NOTE: status changes handled by page toolbar bulk actions. Keep read-only here to avoid server coupling.
       return (
-        <Select value={currentStatus} onValueChange={handleStatusChange}>
+        <Select value={currentStatus} disabled>
           <SelectTrigger
             className={cn(
-              "w-full capitalize border-none [&>svg]:hidden",
-              className,
+              'w-full capitalize border-none [&>svg]:hidden',
+              className
             )}
           >
             <SelectValue placeholder="Select a status" />
           </SelectTrigger>
           <SelectContent>
-            {STATUS_OPTIONS.map((status) => (
-              <SelectItem
-                key={status}
-                value={status}
-                className={cn("capitalize mb-2", getClassName(status))}
-              >
-                {status.replace("_", " ").toLowerCase()}
-              </SelectItem>
-            ))}
+            {(['ACTIVE', 'PENDING', 'UNDER_REVIEW', 'SUSPENDED'] as const).map(
+              status => (
+                <SelectItem
+                  key={status}
+                  value={status}
+                  className={cn('capitalize mb-2', getClassName(status))}
+                >
+                  {status.replace('_', ' ').toLowerCase()}
+                </SelectItem>
+              )
+            )}
           </SelectContent>
         </Select>
       );
     },
   },
   {
-    accessorKey: "category",
+    accessorKey: 'category',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Category" />
     ),
   },
   {
-    accessorKey: "totalProducts",
+    accessorKey: 'productCount',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total Products" />
+      <DataTableColumnHeader column={column} title="Products" />
     ),
     cell: ({ row }) => {
-      return <div className="font-medium">{row.original.totalProducts}</div>;
+      return (
+        <div className="font-medium">{row.original.productCount ?? 0}</div>
+      );
     },
   },
   {
-    accessorKey: "totalSales",
+    accessorKey: 'createdAt',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total Sales" />
+      <DataTableColumnHeader column={column} title="Joined" />
     ),
     cell: ({ row }) => {
-      return <div className="font-medium">{row.original.totalSales}</div>;
+      const d = row.original.createdAt
+        ? new Date(row.original.createdAt)
+        : null;
+      return d
+        ? d.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : '-';
     },
   },
   {
-    accessorKey: "joinDate",
+    id: 'actions',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Join Date" />
+      <DataTableColumnHeader column={column} title={'Action'} />
     ),
     cell: ({ row }) => {
-      return new Date(row.original.createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    },
-  },
-  {
-    accessorKey: "rating",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Rating" />
-    ),
-  },
-  {
-    id: "actions",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title={"Action"} />
-    ),
-    cell: ({ row }) => {
-      const router = useRouter();
       return (
         <Button
-          onClick={() => router.push(`/admin/merchants/${row.original.id}`)}
+          onClick={() =>
+            window.open(`/admin/merchants/${row.original.id}`, '_self')
+          }
           variant="ghost"
           className="h-8 w-8 p-0"
         >

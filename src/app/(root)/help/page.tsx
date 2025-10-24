@@ -1,10 +1,5 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Search,
   ShoppingBag,
@@ -17,112 +12,118 @@ import {
   MessageSquare,
   Phone,
   Mail,
-} from "lucide-react";
+} from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 const HelpPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const helpCategories = [
     {
-      id: "orders",
-      title: "Orders & Shipping",
-      description: "Track orders, shipping info, and delivery",
+      id: 'orders',
+      title: 'Orders & Shipping',
+      description: 'Track orders, shipping info, and delivery',
       icon: ShoppingBag,
-      color: "bg-blue-100 text-blue-800",
+      color: 'bg-blue-100 text-blue-800',
       articles: [
-        { title: "How to track my order", views: 1234 },
-        { title: "Shipping methods and costs", views: 987 },
-        { title: "Order processing times", views: 756 },
-        { title: "International shipping", views: 543 },
+        { title: 'How to track my order', views: 1234 },
+        { title: 'Shipping methods and costs', views: 987 },
+        { title: 'Order processing times', views: 756 },
+        { title: 'International shipping', views: 543 },
       ],
     },
     {
-      id: "returns",
-      title: "Returns & Exchanges",
-      description: "Return policy, exchanges, and refunds",
+      id: 'returns',
+      title: 'Returns & Exchanges',
+      description: 'Return policy, exchanges, and refunds',
       icon: RotateCcw,
-      color: "bg-green-100 text-green-800",
+      color: 'bg-green-100 text-green-800',
       articles: [
-        { title: "How to return an item", views: 2134 },
-        { title: "Exchange policy", views: 1456 },
-        { title: "Refund processing times", views: 1123 },
-        { title: "Return shipping labels", views: 876 },
+        { title: 'How to return an item', views: 2134 },
+        { title: 'Exchange policy', views: 1456 },
+        { title: 'Refund processing times', views: 1123 },
+        { title: 'Return shipping labels', views: 876 },
       ],
     },
     {
-      id: "payments",
-      title: "Payments & Billing",
-      description: "Payment methods, billing, and invoices",
+      id: 'payments',
+      title: 'Payments & Billing',
+      description: 'Payment methods, billing, and invoices',
       icon: CreditCard,
-      color: "bg-purple-100 text-purple-800",
+      color: 'bg-purple-100 text-purple-800',
       articles: [
-        { title: "Accepted payment methods", views: 1876 },
-        { title: "Payment security", views: 1234 },
-        { title: "Billing address changes", views: 987 },
-        { title: "Invoice and receipt requests", views: 654 },
+        { title: 'Accepted payment methods', views: 1876 },
+        { title: 'Payment security', views: 1234 },
+        { title: 'Billing address changes', views: 987 },
+        { title: 'Invoice and receipt requests', views: 654 },
       ],
     },
     {
-      id: "account",
-      title: "Account & Profile",
-      description: "Account settings, profile, and security",
+      id: 'account',
+      title: 'Account & Profile',
+      description: 'Account settings, profile, and security',
       icon: User,
-      color: "bg-yellow-100 text-yellow-800",
+      color: 'bg-yellow-100 text-yellow-800',
       articles: [
-        { title: "Update profile information", views: 1543 },
-        { title: "Change password", views: 1234 },
-        { title: "Manage addresses", views: 1098 },
-        { title: "Notification preferences", views: 876 },
+        { title: 'Update profile information', views: 1543 },
+        { title: 'Change password', views: 1234 },
+        { title: 'Manage addresses', views: 1098 },
+        { title: 'Notification preferences', views: 876 },
       ],
     },
     {
-      id: "products",
-      title: "Products & Authenticity",
-      description: "Product info, authenticity, and quality",
+      id: 'products',
+      title: 'Products & Authenticity',
+      description: 'Product info, authenticity, and quality',
       icon: Shield,
-      color: "bg-red-100 text-red-800",
+      color: 'bg-red-100 text-red-800',
       articles: [
-        { title: "Product authenticity guarantee", views: 2345 },
-        { title: "Size guides and fitting", views: 1876 },
-        { title: "Product care instructions", views: 1234 },
-        { title: "Quality assurance process", views: 987 },
+        { title: 'Product authenticity guarantee', views: 2345 },
+        { title: 'Size guides and fitting', views: 1876 },
+        { title: 'Product care instructions', views: 1234 },
+        { title: 'Quality assurance process', views: 987 },
       ],
     },
     {
-      id: "merchant",
-      title: "Merchant Information",
-      description: "Becoming a merchant, policies, and support",
+      id: 'merchant',
+      title: 'Merchant Information',
+      description: 'Becoming a merchant, policies, and support',
       icon: Store,
-      color: "bg-indigo-100 text-indigo-800",
+      color: 'bg-indigo-100 text-indigo-800',
       articles: [
-        { title: "How to become a merchant", views: 3456 },
-        { title: "Merchant application process", views: 2134 },
-        { title: "Commission structure", views: 1876 },
-        { title: "Merchant support resources", views: 1234 },
+        { title: 'How to become a merchant', views: 3456 },
+        { title: 'Merchant application process', views: 2134 },
+        { title: 'Commission structure', views: 1876 },
+        { title: 'Merchant support resources', views: 1234 },
       ],
     },
   ];
 
   const popularArticles = [
-    { title: "How to track my order", category: "Orders", views: 5432 },
+    { title: 'How to track my order', category: 'Orders', views: 5432 },
     {
-      title: "Product authenticity guarantee",
-      category: "Products",
+      title: 'Product authenticity guarantee',
+      category: 'Products',
       views: 4321,
     },
-    { title: "How to return an item", category: "Returns", views: 3210 },
-    { title: "Accepted payment methods", category: "Payments", views: 2987 },
-    { title: "How to become a merchant", category: "Merchant", views: 2654 },
+    { title: 'How to return an item', category: 'Returns', views: 3210 },
+    { title: 'Accepted payment methods', category: 'Payments', views: 2987 },
+    { title: 'How to become a merchant', category: 'Merchant', views: 2654 },
   ];
 
   const filteredCategories = helpCategories.filter(
-    (category) =>
+    category =>
       category.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       category.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.articles.some((article) =>
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()),
-      ),
+      category.articles.some(article =>
+        article.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
   );
 
   return (
@@ -145,7 +146,7 @@ const HelpPage: React.FC = () => {
               type="text"
               placeholder="Search for help articles..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="pl-12 h-14 text-lg border-gray-200 focus:border-black focus:ring-black"
             />
           </div>
@@ -155,7 +156,7 @@ const HelpPage: React.FC = () => {
           <>
             {/* Help Categories */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-              {filteredCategories.map((category) => (
+              {filteredCategories.map(category => (
                 <Card
                   key={category.id}
                   className="cursor-pointer hover:shadow-lg transition-shadow"
@@ -240,7 +241,7 @@ const HelpPage: React.FC = () => {
 
             {(() => {
               const category = helpCategories.find(
-                (c) => c.id === selectedCategory,
+                c => c.id === selectedCategory
               );
               return category ? (
                 <div className="mb-16">

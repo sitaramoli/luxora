@@ -1,10 +1,5 @@
-"use client";
+'use client';
 
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Award,
   Users,
@@ -16,65 +11,71 @@ import {
   Mail,
   Phone,
   MapPin,
-} from "lucide-react";
-import { platformInfo } from "@/constants";
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { platformInfo } from '@/constants';
 
 const AboutPage: React.FC = () => {
   const stats = [
-    { label: "Luxury Brands", value: "500+", icon: Award },
-    { label: "Happy Customers", value: "50K+", icon: Users },
-    { label: "Countries Served", value: "25+", icon: Globe },
-    { label: "Years of Excellence", value: "15+", icon: Star },
+    { label: 'Luxury Brands', value: '500+', icon: Award },
+    { label: 'Happy Customers', value: '50K+', icon: Users },
+    { label: 'Countries Served', value: '25+', icon: Globe },
+    { label: 'Years of Excellence', value: '15+', icon: Star },
   ];
 
   const values = [
     {
       icon: Shield,
-      title: "Authenticity Guaranteed",
+      title: 'Authenticity Guaranteed',
       description:
-        "Every item is verified by our expert team to ensure 100% authenticity.",
+        'Every item is verified by our expert team to ensure 100% authenticity.',
     },
     {
       icon: Heart,
-      title: "Curated Excellence",
+      title: 'Curated Excellence',
       description:
-        "Our team of luxury experts handpicks every item in our collection.",
+        'Our team of luxury experts handpicks every item in our collection.',
     },
     {
       icon: Users,
-      title: "Customer First",
+      title: 'Customer First',
       description:
-        "We provide personalized service and support for every customer.",
+        'We provide personalized service and support for every customer.',
     },
     {
       icon: Globe,
-      title: "Global Reach",
+      title: 'Global Reach',
       description:
-        "Bringing luxury fashion from around the world to your doorstep.",
+        'Bringing luxury fashion from around the world to your doorstep.',
     },
   ];
 
   const team = [
     {
-      name: "Sarah Chen",
-      role: "Founder & CEO",
+      name: 'Sarah Chen',
+      role: 'Founder & CEO',
       image:
-        "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
-      bio: "Former luxury retail executive with 20+ years of experience in high-end fashion.",
+        'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400',
+      bio: 'Former luxury retail executive with 20+ years of experience in high-end fashion.',
     },
     {
-      name: "Marcus Rodriguez",
-      role: "Chief Technology Officer",
+      name: 'Marcus Rodriguez',
+      role: 'Chief Technology Officer',
       image:
-        "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400",
-      bio: "Technology leader passionate about creating seamless luxury shopping experiences.",
+        'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400',
+      bio: 'Technology leader passionate about creating seamless luxury shopping experiences.',
     },
     {
-      name: "Elena Volkov",
-      role: "Head of Curation",
+      name: 'Elena Volkov',
+      role: 'Head of Curation',
       image:
-        "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
-      bio: "Former fashion editor with an eye for timeless elegance and emerging trends.",
+        'https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400',
+      bio: 'Former fashion editor with an eye for timeless elegance and emerging trends.',
     },
   ];
 

@@ -1,67 +1,170 @@
-"use client";
+'use client';
 
-import React, { memo, useCallback, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Heart, ShoppingBag, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  reviewCount: number;
-  category: string;
-  isNew: boolean;
-  isSale: boolean;
-}
+import React, { memo, useCallback, useMemo, useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { LoadingSpinner } from '@/components/PageLoader';
+import { Product } from '@/types/product';
+import { toast } from 'sonner';
+import { dispatchCartUpdated, dispatchWishlistUpdated } from '@/lib/events';
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = memo(({ product }) => {
-  const handleAddToCart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // TODO: Implement add to cart functionality
-  }, []);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isLoadingCart, setIsLoadingCart] = useState(false);
+  const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
+  const [wishlistChecked, setWishlistChecked] = useState(false);
 
-  const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
+  // Check if product is in wishlist on mount
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      try {
+        const response = await fetch(`/api/wishlist?productId=${product.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsInWishlist(data.inWishlist);
+        }
+      } catch (error) {
+        console.error('Error checking wishlist status:', error);
+      } finally {
+        setWishlistChecked(true);
+      }
+    };
+
+    checkWishlistStatus();
+  }, [product.id]);
+
+  const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // TODO: Implement wishlist toggle functionality
-  }, []);
+    
+    setIsLoadingCart(true);
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: parseInt(product.id),
+          quantity: 1,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Please sign in to add items to cart');
+          return;
+        }
+        throw new Error(data.error || 'Failed to add to cart');
+      }
+
+      toast.success('Item added to cart!');
+      
+      // Update cart count in header
+      dispatchCartUpdated();
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add to cart');
+    } finally {
+      setIsLoadingCart(false);
+    }
+  }, [product.id]);
+
+  const handleWishlistToggle = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsLoadingWishlist(true);
+    try {
+      if (isInWishlist) {
+        // Remove from wishlist
+        const response = await fetch('/api/wishlist', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: parseInt(product.id),
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            toast.error('Please sign in to manage wishlist');
+            return;
+          }
+          throw new Error(data.error || 'Failed to remove from wishlist');
+        }
+
+        setIsInWishlist(false);
+        toast.success('Item removed from wishlist');
+      } else {
+        // Add to wishlist
+        const response = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: parseInt(product.id),
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            toast.error('Please sign in to add to wishlist');
+            return;
+          }
+          throw new Error(data.error || 'Failed to add to wishlist');
+        }
+
+        setIsInWishlist(true);
+        toast.success('Item added to wishlist!');
+      }
+      
+      // Update wishlist count in header
+      dispatchWishlistUpdated();
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update wishlist');
+    } finally {
+      setIsLoadingWishlist(false);
+    }
+  }, [product.id, isInWishlist]);
 
   const discountPercentage = useMemo(() => {
     return product.originalPrice
       ? Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) * 100,
+          ((product.originalPrice - product.price) / product.originalPrice) *
+            100
         )
       : 0;
   }, [product.originalPrice, product.price]);
-
-  const isInWishlist = useCallback((id: string) => {
-    // TODO: Implement wishlist check
-    return false;
-  }, []);
 
   const starRating = useMemo(() => {
     return [...Array(5)].map((_, i) => (
       <Star
         key={i}
         className={cn(
-          "h-3 w-3",
+          'h-3 w-3',
           i < Math.floor(product.rating)
-            ? "text-yellow-400 fill-yellow-400"
-            : "text-gray-300",
+            ? 'text-yellow-400 fill-yellow-400'
+            : 'text-gray-300'
         )}
       />
     ));
@@ -99,27 +202,37 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ product }) => {
               variant="ghost"
               size="sm"
               onClick={handleWishlistToggle}
+              disabled={isLoadingWishlist || !wishlistChecked}
               className="absolute top-3 right-3 bg-white/80 hover:bg-white"
             >
-              <Heart
-                className={cn(
-                  "h-4 w-4",
-                  isInWishlist(product.id)
-                    ? "fill-red-500 text-red-500"
-                    : "text-gray-600",
-                )}
-              />
+              {isLoadingWishlist ? (
+                <LoadingSpinner size="icon" />
+              ) : (
+                <Heart
+                  className={cn(
+                    'h-4 w-4',
+                    isInWishlist
+                      ? 'fill-red-500 text-red-500'
+                      : 'text-gray-600'
+                  )}
+                />
+              )}
             </Button>
 
             {/* Quick Add to Cart */}
             <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Button
                 onClick={handleAddToCart}
-                className="w-full bg-black/80 text-white hover:bg-black"
+                disabled={isLoadingCart}
+                className="w-full bg-black/80 text-white hover:bg-black disabled:opacity-50"
                 size="sm"
               >
-                <ShoppingBag className="h-4 w-4 mr-2" />
-                Add to Cart
+                {isLoadingCart ? (
+                  <LoadingSpinner size="icon" className="mr-2" />
+                ) : (
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                )}
+                {isLoadingCart ? 'Adding...' : 'Add to Cart'}
               </Button>
             </div>
           </div>

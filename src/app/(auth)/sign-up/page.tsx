@@ -1,9 +1,6 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import React, { useState } from "react";
-import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Crown,
   Loader,
@@ -15,41 +12,45 @@ import {
   EyeOff,
   Eye,
   CheckCircle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Controller, useForm } from "react-hook-form";
-import { signUpSchema } from "@/lib/validations";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { signUp } from "@/lib/actions/auth/auth";
-import { useRouter } from "next/navigation";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import type { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { signUp } from '@/lib/actions/auth/auth';
+import { cn } from '@/lib/utils';
+import { signUpSchema } from '@/lib/validations';
 
 const benefits = [
   {
     icon: Crown,
-    title: "Exclusive Access",
-    description: "Get early access to new collections and limited editions",
-    className: "text-yellow-600",
-    backgroundColor: "bg-yellow-100",
+    title: 'Exclusive Access',
+    description: 'Get early access to new collections and limited editions',
+    className: 'text-yellow-600',
+    backgroundColor: 'bg-yellow-100',
   },
   {
     icon: Shield,
-    title: "Secure Shopping",
-    description: "Your personal and payment information is always protected",
-    className: "text-blue-600",
-    backgroundColor: "bg-blue-100",
+    title: 'Secure Shopping',
+    description: 'Your personal and payment information is always protected',
+    className: 'text-blue-600',
+    backgroundColor: 'bg-blue-100',
   },
   {
     icon: Sparkles,
-    title: "Personalized Experience",
-    description: "Receive curated recommendations based on your preferences",
-    className: "text-purple-600",
-    backgroundColor: "bg-purple-100",
+    title: 'Personalized Experience',
+    description: 'Receive curated recommendations based on your preferences',
+    className: 'text-purple-600',
+    backgroundColor: 'bg-purple-100',
   },
 ];
 
@@ -68,32 +69,32 @@ const Page = () => {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
       acceptTerms: false,
     },
   });
 
-  const password = watch("password");
+  const password = watch('password');
 
   const passwordRequirements = [
-    { label: "At least 8 characters", met: password?.length >= 8 },
-    { label: "One uppercase letter", met: /[A-Z]/.test(password || "") },
-    { label: "One lowercase letter", met: /[a-z]/.test(password || "") },
-    { label: "One number", met: /\d/.test(password || "") },
+    { label: 'At least 8 characters', met: password?.length >= 8 },
+    { label: 'One uppercase letter', met: /[A-Z]/.test(password || '') },
+    { label: 'One lowercase letter', met: /[a-z]/.test(password || '') },
+    { label: 'One number', met: /\d/.test(password || '') },
   ];
 
   const onSubmit = async (data: SignupFormData) => {
     const result = await signUp(data);
     if (result.success) {
-      toast.success("Success", {
-        description: "Your luxury account has been created.",
+      toast.success('Success', {
+        description: 'Your luxury account has been created.',
       });
-      router.push("/");
+      router.push('/');
     } else {
-      toast.error("Error", {
+      toast.error('Error', {
         description: result.error,
       });
     }
@@ -125,23 +126,23 @@ const Page = () => {
           {benefits.map(
             (
               { title, description, icon: Icon, backgroundColor, className },
-              index,
+              index
             ) => (
               <div key={index} className="flex items-start gap-4">
                 <div
                   className={cn(
-                    "w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center flex-shrink-0",
-                    backgroundColor,
+                    'w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center flex-shrink-0',
+                    backgroundColor
                   )}
                 >
-                  <Icon className={cn("h-6 w-6 text-gray-700", className)} />
+                  <Icon className={cn('h-6 w-6 text-gray-700', className)} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
                   <p className="text-gray-600">{description}</p>
                 </div>
               </div>
-            ),
+            )
           )}
         </div>
       </div>
@@ -180,14 +181,14 @@ const Page = () => {
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    {...register("fullName")}
+                    {...register('fullName')}
                     id="name"
                     type="text"
                     placeholder="Enter your full name"
                     className={cn(
-                      "pl-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl",
+                      'pl-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl',
                       errors.fullName &&
-                        "border-red-300 focus:border-red-500 focus:ring-red-500",
+                        'border-red-300 focus:border-red-500 focus:ring-red-500'
                     )}
                   />
                 </div>
@@ -208,14 +209,14 @@ const Page = () => {
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    {...register("email")}
+                    {...register('email')}
                     id="email"
                     type="email"
                     placeholder="Enter your email"
                     className={cn(
-                      "pl-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl",
+                      'pl-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl',
                       errors.email &&
-                        "border-red-300 focus:border-red-500 focus:ring-red-500",
+                        'border-red-300 focus:border-red-500 focus:ring-red-500'
                     )}
                   />
                 </div>
@@ -234,14 +235,14 @@ const Page = () => {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    {...register("password")}
+                    {...register('password')}
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Create a strong password"
                     className={cn(
-                      "pl-10 pr-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl",
+                      'pl-10 pr-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl',
                       errors.password &&
-                        "border-red-300 focus:border-red-500 focus:ring-red-500",
+                        'border-red-300 focus:border-red-500 focus:ring-red-500'
                     )}
                   />
                   <button
@@ -272,14 +273,14 @@ const Page = () => {
                       <div key={index} className="flex items-center gap-2">
                         <CheckCircle
                           className={cn(
-                            "h-3 w-3",
-                            req.met ? "text-green-500" : "text-gray-300",
+                            'h-3 w-3',
+                            req.met ? 'text-green-500' : 'text-gray-300'
                           )}
                         />
                         <span
                           className={cn(
-                            "text-xs",
-                            req.met ? "text-green-700" : "text-gray-500",
+                            'text-xs',
+                            req.met ? 'text-green-700' : 'text-gray-500'
                           )}
                         >
                           {req.label}
@@ -300,14 +301,14 @@ const Page = () => {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    {...register("confirmPassword")}
+                    {...register('confirmPassword')}
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="Confirm your password"
                     className={cn(
-                      "pl-10 pr-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl",
+                      'pl-10 pr-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl',
                       errors.confirmPassword &&
-                        "border-red-300 focus:border-red-500 focus:ring-red-500",
+                        'border-red-300 focus:border-red-500 focus:ring-red-500'
                     )}
                   />
                   <button
@@ -331,7 +332,7 @@ const Page = () => {
 
               <div className="flex items-start gap-3">
                 <Controller
-                  name={"acceptTerms"}
+                  name={'acceptTerms'}
                   control={control}
                   render={({ field }) => (
                     <Checkbox
@@ -346,14 +347,14 @@ const Page = () => {
                   htmlFor="acceptTerms"
                   className="text-sm text-gray-700 leading-relaxed"
                 >
-                  I agree to the{" "}
+                  I agree to the{' '}
                   <Link
                     href="/terms"
                     className="text-black hover:text-gray-700 font-medium transition-colors underline"
                   >
                     Terms of Service
-                  </Link>{" "}
-                  and{" "}
+                  </Link>{' '}
+                  and{' '}
                   <Link
                     href="/privacy"
                     className="text-black hover:text-gray-700 font-medium transition-colors underline"
@@ -376,7 +377,7 @@ const Page = () => {
                 {isSubmitting ? (
                   <Loader className="animate-spin" />
                 ) : (
-                  "Create account"
+                  'Create account'
                 )}
               </Button>
             </form>
@@ -385,7 +386,7 @@ const Page = () => {
 
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{" "}
+                Already have an account?{' '}
                 <Link
                   href="/sign-in"
                   className="text-black hover:text-gray-700 font-medium transition-colors"

@@ -1,20 +1,23 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { toast } from 'sonner';
+import { dispatchCartUpdated, dispatchWishlistUpdated } from '@/lib/events';
+import { LoadingSpinner } from '@/components/PageLoader';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import ProductCard from "@/components/ProductCard";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import ProductCard from '@/components/ProductCard';
 
 import {
   Heart,
@@ -26,10 +29,10 @@ import {
   Share2,
   Plus,
   Minus,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { Product, Review } from "@/types";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { Product, Review } from '@/types';
 
 interface ProductDetailProps {
   product: Product;
@@ -43,25 +46,134 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
   relatedProducts,
 }) => {
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedSize, setSelectedSize] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isLoadingCart, setIsLoadingCart] = useState(false);
+  const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
+  const [wishlistChecked, setWishlistChecked] = useState(false);
 
-  const handleAddToCart = () => {
-    //
+  // Check if product is in wishlist on mount
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      try {
+        const response = await fetch(`/api/wishlist?productId=${product.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsInWishlist(data.inWishlist);
+        }
+      } catch (error) {
+        console.error('Error checking wishlist status:', error);
+      } finally {
+        setWishlistChecked(true);
+      }
+    };
+
+    checkWishlistStatus();
+  }, [product.id]);
+
+  const handleAddToCart = async () => {
+    setIsLoadingCart(true);
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: parseInt(product.id),
+          quantity: quantity,
+          selectedColor: selectedColor || null,
+          selectedSize: selectedSize || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 401) {
+          toast.error('Please sign in to add items to cart');
+          return;
+        }
+        throw new Error(errorData.error || 'Failed to add to cart');
+      }
+
+      toast.success('Item added to cart!');
+      
+      // Update cart count in header
+      dispatchCartUpdated();
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add to cart');
+    } finally {
+      setIsLoadingCart(false);
+    }
   };
 
-  const handleWishlistToggle = () => {
-    //
-  };
+  const handleWishlistToggle = async () => {
+    setIsLoadingWishlist(true);
+    try {
+      if (isInWishlist) {
+        // Remove from wishlist
+        const response = await fetch('/api/wishlist', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: parseInt(product.id),
+          }),
+        });
 
-  const isInWishlist = (id: string) => {
-    return true;
+        if (!response.ok) {
+          const errorData = await response.json();
+          if (response.status === 401) {
+            toast.error('Please sign in to manage wishlist');
+            return;
+          }
+          throw new Error(errorData.error || 'Failed to remove from wishlist');
+        }
+
+        setIsInWishlist(false);
+        toast.success('Item removed from wishlist');
+      } else {
+        // Add to wishlist
+        const response = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: parseInt(product.id),
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          if (response.status === 401) {
+            toast.error('Please sign in to add to wishlist');
+            return;
+          }
+          throw new Error(errorData.error || 'Failed to add to wishlist');
+        }
+
+        setIsInWishlist(true);
+        toast.success('Item added to wishlist!');
+      }
+      
+      // Update wishlist count in header
+      dispatchWishlistUpdated();
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update wishlist');
+    } finally {
+      setIsLoadingWishlist(false);
+    }
   };
 
   const discountPercentage = product.originalPrice
     ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100,
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
       )
     : 0;
 
@@ -119,10 +231,8 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={cn(
-                    "aspect-square relative overflow-hidden rounded-md bg-gray-100 border-2",
-                    selectedImage === index
-                      ? "border-black"
-                      : "border-gray-200",
+                    'aspect-square relative overflow-hidden rounded-md bg-gray-100 border-2',
+                    selectedImage === index ? 'border-black' : 'border-gray-200'
                   )}
                 >
                   <Image
@@ -150,10 +260,10 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
                     <Star
                       key={i}
                       className={cn(
-                        "h-4 w-4",
+                        'h-4 w-4',
                         i < Math.floor(product.rating)
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-gray-300",
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-gray-300'
                       )}
                     />
                   ))}
@@ -186,7 +296,7 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
                     <SelectValue placeholder="Select size" />
                   </SelectTrigger>
                   <SelectContent>
-                    {product.sizes.map((size) => (
+                    {product.sizes.map(size => (
                       <SelectItem key={size} value={size}>
                         {size}
                       </SelectItem>
@@ -201,15 +311,15 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
               <div>
                 <Label className="text-sm font-medium mb-3 block">Color</Label>
                 <div className="flex gap-2">
-                  {product.colors.map((color) => (
+                  {product.colors.map(color => (
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(color.name)}
                       className={cn(
-                        "w-8 h-8 rounded-full border-2 transition-all",
+                        'w-8 h-8 rounded-full border-2 transition-all',
                         selectedColor === color.name
-                          ? "border-black scale-110"
-                          : "border-gray-300 hover:border-gray-400",
+                          ? 'border-black scale-110'
+                          : 'border-gray-300 hover:border-gray-400'
                       )}
                       style={{ backgroundColor: color.value }}
                       title={color.name}
@@ -256,10 +366,14 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
                 onClick={handleAddToCart}
                 className="w-full bg-black text-white hover:bg-gray-800"
                 size="lg"
-                disabled={!product.inStock || !selectedSize || !selectedColor}
+                disabled={!product.inStock || isLoadingCart || (product.sizes && product.sizes.length > 0 && !selectedSize) || (product.colors && product.colors.length > 0 && !selectedColor)}
               >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Add to Cart
+                {isLoadingCart ? (
+                  <LoadingSpinner size="icon" className="mr-2" />
+                ) : (
+                  <ShoppingCart className="h-5 w-5 mr-2" />
+                )}
+                {isLoadingCart ? 'Adding to Cart...' : 'Add to Cart'}
               </Button>
 
               <div className="flex gap-2">
@@ -267,18 +381,25 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
                   variant="outline"
                   onClick={handleWishlistToggle}
                   className="flex-1"
+                  disabled={isLoadingWishlist || !wishlistChecked}
                 >
-                  <Heart
-                    className={cn(
-                      "h-4 w-4 mr-2",
-                      isInWishlist(product.id)
-                        ? "fill-red-500 text-red-500"
-                        : "",
-                    )}
-                  />
-                  {isInWishlist(product.id)
-                    ? "Remove from Wishlist"
-                    : "Add to Wishlist"}
+                  {isLoadingWishlist ? (
+                    <LoadingSpinner size="icon" className="mr-2" />
+                  ) : (
+                    <Heart
+                      className={cn(
+                        'h-4 w-4 mr-2',
+                        isInWishlist
+                          ? 'fill-red-500 text-red-500'
+                          : ''
+                      )}
+                    />
+                  )}
+                  {isLoadingWishlist 
+                    ? 'Loading...'
+                    : isInWishlist
+                    ? 'Remove from Wishlist'
+                    : 'Add to Wishlist'}
                 </Button>
                 <Button variant="outline" size="lg">
                   <Share2 className="h-4 w-4" />
@@ -349,7 +470,7 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
 
             <TabsContent value="reviews" className="mt-6">
               <div className="space-y-6">
-                {reviews.map((review) => (
+                {reviews.map(review => (
                   <Card key={review.id}>
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -359,10 +480,10 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
                               <Star
                                 key={i}
                                 className={cn(
-                                  "h-3 w-3",
+                                  'h-3 w-3',
                                   i < review.rating
-                                    ? "text-yellow-400 fill-yellow-400"
-                                    : "text-gray-300",
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-300'
                                 )}
                               />
                             ))}
@@ -412,7 +533,7 @@ const ProductDetails: React.FC<ProductDetailProps> = ({
             You May Also Like
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map((product) => (
+            {relatedProducts.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

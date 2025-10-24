@@ -1,15 +1,23 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { navItems } from "@/constants";
-import { Heart, Menu, Search, ShoppingCart, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Session } from "next-auth";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn, getInitials } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import {
+  Heart,
+  Menu,
+  Search,
+  ShoppingCart,
+  X,
+  User,
+  Settings,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type { Session } from 'next-auth';
+import { signOut } from 'next-auth/react';
+import React, { useState, memo, useCallback, useMemo } from 'react';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,10 +26,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { signOut } from "next-auth/react";
-import { Badge } from "@/components/ui/badge";
-import { UserRole } from "@/types";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { navItems } from '@/constants';
+import config from '@/lib/config';
+import { cn, getInitials } from '@/lib/utils';
+import type { UserRole } from '@/types';
 
 interface Props {
   session: Session;
@@ -29,35 +39,142 @@ interface Props {
   cartItems: number;
 }
 
-const Header = (props: Props) => {
+const Header = memo((props: Props) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [imageError, setImageError] = useState(false);
   const router = useRouter();
+
+  // Memoize user role and dashboard access
   const userRole: UserRole = props.session?.user?.role;
-  const canViewDashboard =
-    userRole && (userRole === "ADMIN" || userRole === "MERCHANT");
+  const canViewDashboard = useMemo(
+    () => userRole && (userRole === 'ADMIN' || userRole === 'MERCHANT'),
+    [userRole]
+  );
+
+  // Memoize user initials
+  const userInitials = useMemo(
+    () => getInitials(props.session?.user?.name || 'U'),
+    [props.session?.user?.name]
+  );
+
+  // Memoize profile image URL with enhanced logic
+  const profileImageUrl = useMemo(() => {
+    const userImage = props.session?.user?.image;
+
+    if (!userImage || imageError) {
+      return null;
+    }
+
+    // Debug logging for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Header Profile Image:', {
+        userImage,
+        imagekitEndpoint: config.env.imagekit.urlEndpoint,
+        isImagekitPath: userImage.startsWith('/profile-pictures'),
+      });
+    }
+
+    // Handle ImageKit URLs for uploaded profile pictures
+    if (userImage.startsWith('/profile-pictures')) {
+      return `${config.env.imagekit.urlEndpoint}${userImage}`;
+    }
+
+    // Handle external URLs (OAuth providers, etc.)
+    if (userImage.startsWith('http')) {
+      return userImage;
+    }
+
+    // Handle relative paths by converting to ImageKit URL
+    return `${config.env.imagekit.urlEndpoint}${userImage}`;
+  }, [props.session?.user?.image, imageError]);
+
+  // Memoize dashboard route
+  const dashboardRoute = useMemo(
+    () => `/${userRole?.toLowerCase()}`,
+    [userRole]
+  );
+
+  // Memoize badge width calculations
+  const wishlistBadgeWidth = useMemo(
+    () =>
+      props.wishlistItems > 99
+        ? 'w-6'
+        : props.wishlistItems > 9
+          ? 'w-5'
+          : 'w-4',
+    [props.wishlistItems]
+  );
+
+  const cartBadgeWidth = useMemo(
+    () => (props.cartItems > 99 ? 'w-6' : props.cartItems > 9 ? 'w-5' : 'w-4'),
+    [props.cartItems]
+  );
+
+  // Optimized callbacks
+  const handleMenuToggle = useCallback(() => {
+    setIsMenuOpen(prev => !prev);
+  }, []);
+
+  const handleMenuClose = useCallback(() => {
+    setIsMenuOpen(false);
+  }, []);
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    },
+    []
+  );
+
+  const handleSearchSubmit = useCallback(() => {
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }, [searchQuery, router]);
+
+  const handleProfileClick = useCallback(() => {
+    router.push('/profile');
+  }, [router]);
+
+  const handleDashboardClick = useCallback(() => {
+    router.push(dashboardRoute);
+  }, [router, dashboardRoute]);
+
+  const handleSignOut = useCallback(() => {
+    signOut();
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    console.warn('Profile image failed to load:', props.session?.user?.image);
+    setImageError(true);
+  }, [props.session?.user?.image]);
+
+  const handleImageLoad = useCallback(() => {
+    setImageError(false);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-gray-200">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-gradient-to-b from-black/80 via-black/70 to-black/80 backdrop-blur">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">L</span>
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+              <span className="text-black font-bold text-sm">L</span>
             </div>
-            <span className="text-xl font-bold text-black uppercase hidden md:block">
+            <span className="text-xl font-bold text-white uppercase hidden md:block">
               Luxora
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
+            {navItems.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-gray-700 hover:text-black transition-colors font-medium"
+                className="text-white/80 hover:text-white transition-colors font-medium"
               >
                 {item.label}
               </Link>
@@ -72,15 +189,14 @@ const Header = (props: Props) => {
                 type="text"
                 placeholder="Search luxury items..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10 w-64 bg-gray-50 border-gray-200 focus:border-black focus:ring-black"
+                onChange={handleSearchChange}
+                onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
+                className="pr-10 w-64 bg-white/10 border-white/20 text-white placeholder-white/60 focus:border-white focus:ring-white"
               />
               <Search
-                onClick={() => {
-                  //TODO: Implement search functionality
-                  console.log(searchQuery);
-                }}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4"
+                onClick={handleSearchSubmit}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4 cursor-pointer hover:text-white transition-colors"
+                aria-label="Search"
               />
             </div>
 
@@ -88,55 +204,82 @@ const Header = (props: Props) => {
             <div className="flex items-center space-x-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="h-6 w-6">
-                    {props.session?.user?.image && (
-                      <AvatarImage src={props.session.user.image} />
-                    )}
-                    <AvatarFallback>
-                      {getInitials(props.session?.user?.name || "U")}
-                    </AvatarFallback>
-                  </Avatar>
+                  <Button
+                    variant="ghost"
+                    className="h-8 w-8 rounded-full p-0 relative hover:bg-white/10"
+                    aria-label="Open profile menu"
+                  >
+                    <Avatar className="h-8 w-8 border border-white/20">
+                      {profileImageUrl && !imageError ? (
+                        <AvatarImage
+                          src={profileImageUrl}
+                          alt={`${props.session?.user?.name || 'User'} profile picture`}
+                          className="object-cover"
+                          onError={handleImageError}
+                          onLoad={handleImageLoad}
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-yellow-300 text-black font-medium text-sm">
+                          {userInitials}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    {/* Online indicator */}
+                    <div className="absolute bottom-0 right-0 h-2 w-2 bg-green-400 border border-black rounded-full" />
+                  </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-40" align="center">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {props.session?.user?.name || 'User'}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {props.session?.user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => router.push("/profile")}>
-                      Profile
+                    <DropdownMenuItem
+                      onClick={handleProfileClick}
+                      className="cursor-pointer"
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
                     </DropdownMenuItem>
                     {canViewDashboard && (
                       <DropdownMenuItem
-                        onClick={() =>
-                          router.push(`/${userRole.toLowerCase()}`)
-                        }
+                        onClick={handleDashboardClick}
+                        className="cursor-pointer"
                       >
-                        Dashboard
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
-                    Log out
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="cursor-pointer"
+                  >
+                    <span>Log out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               {/* Wishlist */}
               <Link href="/wishlist">
-                <Button variant="ghost" size="sm" className="p-2 relative">
+                <Button variant="ghost" size="sm" className="p-2 relative text-white hover:bg-white/10">
                   <Heart className="h-5 w-5" />
                   {props.wishlistItems > 0 && (
                     <Badge
                       className={cn(
-                        "absolute -top-1 -right-1 h-4 p-0 flex items-center justify-center text-xs bg-red-500",
-                        props.wishlistItems > 99
-                          ? "w-6"
-                          : props.wishlistItems > 9
-                            ? "w-5"
-                            : "w-4",
+                        'absolute -top-1 -right-1 h-4 p-0 flex items-center justify-center text-xs bg-red-500',
+                        wishlistBadgeWidth
                       )}
                     >
-                      {props.wishlistItems}
+                      {props.wishlistItems > 99 ? '99+' : props.wishlistItems}
                     </Badge>
                   )}
                 </Button>
@@ -144,20 +287,16 @@ const Header = (props: Props) => {
 
               {/* Cart */}
               <Link href="/cart">
-                <Button variant="ghost" size="sm" className="p-2 relative">
+                <Button variant="ghost" size="sm" className="p-2 relative text-white hover:bg-white/10">
                   <ShoppingCart className="h-5 w-5" />
                   {props.cartItems > 0 && (
                     <Badge
                       className={cn(
-                        "absolute -top-1 -right-1 h-4 p-0 flex items-center justify-center text-xs bg-black",
-                        props.cartItems > 99
-                          ? "w-6"
-                          : props.cartItems > 9
-                            ? "w-5"
-                            : "w-4",
+                        'absolute -top-1 -right-1 h-4 p-0 flex items-center justify-center text-xs bg-yellow-300 text-black',
+                        cartBadgeWidth
                       )}
                     >
-                      {props.cartItems}
+                      {props.cartItems > 99 ? '99+' : props.cartItems}
                     </Badge>
                   )}
                 </Button>
@@ -167,8 +306,8 @@ const Header = (props: Props) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="md:hidden p-2"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden p-2 text-white hover:bg-white/10"
+                onClick={handleMenuToggle}
               >
                 {isMenuOpen ? (
                   <X className="h-5 w-5" />
@@ -182,14 +321,14 @@ const Header = (props: Props) => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-white/10">
             <nav className="flex flex-col space-y-2">
-              {navItems.map((item) => (
+              {navItems.map(item => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="py-2 text-gray-700 hover:text-black transition-colors font-medium"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="py-2 text-white/80 hover:text-white transition-colors font-medium"
+                  onClick={handleMenuClose}
                 >
                   {item.label}
                 </Link>
@@ -202,15 +341,14 @@ const Header = (props: Props) => {
                 type="text"
                 placeholder="Search luxury items..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10 w-full bg-gray-50 border-gray-200 focus:border-black focus:ring-black"
+                onChange={handleSearchChange}
+                onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
+                className="pr-10 w-full bg-white/10 border-white/20 text-white placeholder-white/60 focus:border-white focus:ring-white"
               />
               <Search
-                onClick={() => {
-                  //TODO: Implement search functionality
-                  console.log(searchQuery);
-                }}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4"
+                onClick={handleSearchSubmit}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4 cursor-pointer hover:text-white transition-colors"
+                aria-label="Search"
               />
             </div>
           </div>
@@ -218,5 +356,8 @@ const Header = (props: Props) => {
       </div>
     </header>
   );
-};
+});
+
+Header.displayName = 'Header';
+
 export default Header;

@@ -1,6 +1,7 @@
-import ImageKit from "imagekit";
-import config from "@/lib/config";
-import { NextResponse } from "next/server";
+import ImageKit from 'imagekit';
+import { NextResponse } from 'next/server';
+
+import config from '@/lib/config';
 
 const {
   env: {

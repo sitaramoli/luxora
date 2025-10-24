@@ -1,11 +1,12 @@
-import { Ratelimit } from "@upstash/ratelimit";
-import redis from "@/database/redis";
+import { Ratelimit } from '@upstash/ratelimit';
+
+import redis from '@/database/redis';
 
 const ratelimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.fixedWindow(500, "1m"),
+  limiter: Ratelimit.fixedWindow(500, '1m'),
   analytics: true,
-  prefix: "@upstash/ratelimit",
+  prefix: '@upstash/ratelimit',
 });
 
 export default ratelimit;

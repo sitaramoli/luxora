@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,7 +69,10 @@ export const StatCard: React.FC<StatCardProps> = ({
             </Badge>
           )}
           {icon && (
-            <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20` }}>
+            <div
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: `${color}20` }}
+            >
               {icon}
             </div>
           )}
@@ -78,14 +81,12 @@ export const StatCard: React.FC<StatCardProps> = ({
       <CardContent>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <div className="text-2xl font-bold text-gray-900">
-              {value}
-            </div>
-            {subtitle && (
-              <p className="text-sm text-gray-500">{subtitle}</p>
-            )}
+            <div className="text-2xl font-bold text-gray-900">{value}</div>
+            {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
             {change !== undefined && (
-              <div className={`flex items-center gap-1 text-xs ${getChangeColor()}`}>
+              <div
+                className={`flex items-center gap-1 text-xs ${getChangeColor()}`}
+              >
                 {getChangeIcon()}
                 <span>{Math.abs(change)}% from last month</span>
               </div>
@@ -93,20 +94,16 @@ export const StatCard: React.FC<StatCardProps> = ({
           </div>
           {chartData && (
             <div className="flex items-end">
-              <MiniChart 
-                data={chartData} 
-                color={color} 
-                type={chartType}
-              />
+              <MiniChart data={chartData} color={color} type={chartType} />
             </div>
           )}
         </div>
       </CardContent>
       {/* Subtle gradient overlay */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none opacity-5"
-        style={{ 
-          background: `linear-gradient(135deg, ${color} 0%, transparent 100%)` 
+        style={{
+          background: `linear-gradient(135deg, ${color} 0%, transparent 100%)`,
         }}
       />
     </Card>

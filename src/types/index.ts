@@ -5,15 +5,15 @@ export interface AuthCredentials {
   rememberMe?: boolean;
 }
 
-export type AccountStatus = "ACTIVE" | "PENDING" | "SUSPENDED" | "UNDER_REVIEW";
+export type AccountStatus = 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'UNDER_REVIEW';
 export type OrderStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "SHIPPED"
-  | "DELIVERED"
-  | "CANCELLED"
-  | "REFUNDED";
-export type UserRole = "CUSTOMER" | "ADMIN" | "MERCHANT";
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'REFUNDED';
+export type UserRole = 'CUSTOMER' | 'ADMIN' | 'MERCHANT';
 
 export interface Brand {
   slug: string;
@@ -119,12 +119,12 @@ export interface RecentOrder {
   name: string;
   date: string;
   status:
-    | "PENDING"
-    | "PROCESSING"
-    | "SHIPPED"
-    | "DELIVERED"
-    | "CANCELLED"
-    | "REFUNDED";
+    | 'PENDING'
+    | 'PROCESSING'
+    | 'SHIPPED'
+    | 'DELIVERED'
+    | 'CANCELLED'
+    | 'REFUNDED';
   total: number;
   items: number;
   brand: string;
@@ -132,7 +132,7 @@ export interface RecentOrder {
 
 export interface Address {
   id: string;
-  type: "home" | "work" | "other";
+  type: 'home' | 'work' | 'other';
   name: string;
   street: string;
   city: string;
@@ -148,9 +148,9 @@ export interface UserProfile {
   fullName: string;
   email: string;
   image: string | null;
-  role: "CUSTOMER" | "ADMIN" | "MERCHANT";
+  role: 'CUSTOMER' | 'ADMIN' | 'MERCHANT';
   createdAt: Date | string;
-  gender: "MALE" | "FEMALE" | "OTHER";
+  gender: 'MALE' | 'FEMALE' | 'OTHER';
   isVerified: boolean;
   phone: string | null;
 }
@@ -160,7 +160,7 @@ export interface Merchant {
   name: string;
   email: string;
   category: string;
-  status: "ACTIVE" | "PENDING" | "UNDER_REVIEW" | "SUSPENDED";
+  status: 'ACTIVE' | 'PENDING' | 'UNDER_REVIEW' | 'SUSPENDED';
   createdAt: string;
   totalProducts: number;
   totalSales: string;

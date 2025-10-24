@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm
+yarn.lock
+package-lock.json
+
+# Production builds
+.next/
+out/
+build/
+dist/
+
+# Database and migrations
+drizzle/
+migrations/
+
+# Cache and logs
+.cache/
+logs/
+*.log
+.DS_Store
+
+# Environment files
+.env*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Generated files
+**/*.generated.*
+coverage/
+.nyc_output/
+
+# Config files that should maintain their formatting
+*.config.js
+*.config.mjs
+
+# Markdown files with specific formatting (optional)
+CHANGELOG.md

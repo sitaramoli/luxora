@@ -1,140 +1,115 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Search, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+
+import { PageLoader } from '@/components/PageLoader';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Search, ArrowRight } from "lucide-react";
+} from '@/components/ui/select';
+import { formatPriceRange, formatSeasonName } from '@/lib/utils';
+
+interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  shortDescription: string | null;
+  image: string;
+  coverImage: string | null;
+  season: string;
+  year: string;
+  isFeatured: boolean;
+  isNew: boolean;
+  displayOrder: number;
+  tags: string[] | null;
+  priceRangeMin: string | null;
+  priceRangeMax: string | null;
+  createdAt: string;
+  productCount: number;
+}
 
 const CollectionsPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [seasonFilter, setSeasonFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [seasonFilter, setSeasonFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const collections = [
-    {
-      id: "1",
-      name: "Spring Elegance 2024",
-      description:
-        "Discover the latest spring collection featuring vibrant colors and flowing silhouettes.",
-      image:
-        "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=800",
-      productCount: 45,
-      season: "Spring",
-      year: "2024",
-      isNew: true,
-      featured: true,
-      brands: ["Chanel", "Dior", "Versace"],
-      priceRange: "$500 - $5,000",
-    },
-    {
-      id: "2",
-      name: "Timeless Classics",
-      description:
-        "Iconic pieces that never go out of style, curated from the world's finest brands.",
-      image:
-        "https://images.pexels.com/photos/1040424/pexels-photo-1040424.jpeg?auto=compress&cs=tinysrgb&w=800",
-      productCount: 67,
-      season: "All Season",
-      year: "2024",
-      isNew: false,
-      featured: true,
-      brands: ["Hermès", "Chanel", "Cartier"],
-      priceRange: "$1,000 - $15,000",
-    },
-    {
-      id: "3",
-      name: "Evening Glamour",
-      description:
-        "Sophisticated evening wear for the most exclusive occasions.",
-      image:
-        "https://images.pexels.com/photos/985635/pexels-photo-985635.jpeg?auto=compress&cs=tinysrgb&w=800",
-      productCount: 32,
-      season: "All Season",
-      year: "2024",
-      isNew: false,
-      featured: false,
-      brands: ["Versace", "Valentino", "Tom Ford"],
-      priceRange: "$2,000 - $8,000",
-    },
-    {
-      id: "4",
-      name: "Summer Luxe 2024",
-      description: "Light, airy pieces perfect for summer sophistication.",
-      image:
-        "https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=800",
-      productCount: 38,
-      season: "Summer",
-      year: "2024",
-      isNew: true,
-      featured: false,
-      brands: ["Gucci", "Prada", "Bottega Veneta"],
-      priceRange: "$400 - $3,500",
-    },
-    {
-      id: "5",
-      name: "Heritage Collection",
-      description:
-        "Celebrating the rich heritage and craftsmanship of luxury fashion.",
-      image:
-        "https://images.pexels.com/photos/1126993/pexels-photo-1126993.jpeg?auto=compress&cs=tinysrgb&w=800",
-      productCount: 54,
-      season: "All Season",
-      year: "2024",
-      isNew: false,
-      featured: true,
-      brands: ["Burberry", "Louis Vuitton", "Hermès"],
-      priceRange: "$800 - $12,000",
-    },
-    {
-      id: "6",
-      name: "Modern Minimalism",
-      description:
-        "Clean lines and contemporary design for the modern luxury consumer.",
-      image:
-        "https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=800",
-      productCount: 29,
-      season: "All Season",
-      year: "2024",
-      isNew: true,
-      featured: false,
-      brands: ["Jil Sander", "The Row", "Lemaire"],
-      priceRange: "$600 - $4,000",
-    },
-  ];
+  // Fetch collections from API
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/collections');
 
-  const filteredCollections = collections.filter((collection) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch collections');
+        }
+
+        const data: Collection[] = await response.json();
+        setCollections(data);
+      } catch (err) {
+        console.error('Error fetching collections:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCollections();
+  }, []);
+
+  const filteredCollections = collections.filter(collection => {
     const matchesSearch =
       collection.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       collection.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSeason =
-      seasonFilter === "all" ||
-      collection.season.toLowerCase() === seasonFilter;
+      seasonFilter === 'all' ||
+      collection.season.toLowerCase() === seasonFilter.toLowerCase();
     return matchesSearch && matchesSeason;
   });
 
   const sortedCollections = [...filteredCollections].sort((a, b) => {
     switch (sortBy) {
-      case "newest":
-        return b.id.localeCompare(a.id);
-      case "name":
+      case 'newest':
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      case 'name':
         return a.name.localeCompare(b.name);
-      case "products":
+      case 'products':
         return b.productCount - a.productCount;
       default:
         return 0;
     }
   });
+
+  if (loading) {
+    return <PageLoader isLoading={loading} />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error</h1>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -168,7 +143,7 @@ const CollectionsPage: React.FC = () => {
                 type="text"
                 placeholder="Search collections..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -184,6 +159,7 @@ const CollectionsPage: React.FC = () => {
                   <SelectItem value="summer">Summer</SelectItem>
                   <SelectItem value="fall">Fall</SelectItem>
                   <SelectItem value="winter">Winter</SelectItem>
+                  <SelectItem value="all_season">All Season</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -208,9 +184,9 @@ const CollectionsPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {sortedCollections
-              .filter((c) => c.featured)
+              .filter(c => c.isFeatured)
               .slice(0, 2)
-              .map((collection) => (
+              .map(collection => (
                 <Card
                   key={collection.id}
                   className="group cursor-pointer hover:shadow-xl transition-all duration-300 p-0"
@@ -231,7 +207,7 @@ const CollectionsPage: React.FC = () => {
                           </Badge>
                         )}
                         <Badge className="bg-white/20 text-white border-white/30">
-                          {collection.season}
+                          {formatSeasonName(collection.season)}
                         </Badge>
                       </div>
                       <h3 className="text-2xl font-bold mb-2">
@@ -244,14 +220,19 @@ const CollectionsPage: React.FC = () => {
                   </div>
                   <CardContent className="p-6">
                     <p className="text-gray-600 mb-4">
-                      {collection.description}
+                      {collection.shortDescription || collection.description}
                     </p>
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-500">
-                        <p className="font-medium">Featured Brands:</p>
-                        <p>{collection.brands.join(", ")}</p>
+                        <p className="font-medium">Price Range:</p>
+                        <p>
+                          {formatPriceRange(
+                            collection.priceRangeMin,
+                            collection.priceRangeMax
+                          )}
+                        </p>
                       </div>
-                      <Link href={`/collections/${collection.id}`}>
+                      <Link href={`/collections/${collection.slug}`}>
                         <Button>
                           Explore
                           <ArrowRight className="h-4 w-4 ml-2" />
@@ -270,7 +251,7 @@ const CollectionsPage: React.FC = () => {
             All Collections
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedCollections.map((collection) => (
+            {sortedCollections.map(collection => (
               <Card
                 key={collection.id}
                 className="group cursor-pointer hover:shadow-lg transition-shadow p-0"
@@ -286,7 +267,7 @@ const CollectionsPage: React.FC = () => {
                     {collection.isNew && (
                       <Badge className="bg-black/80 text-white">New</Badge>
                     )}
-                    {collection.featured && (
+                    {collection.isFeatured && (
                       <Badge className="bg-white/90 text-black">Featured</Badge>
                     )}
                   </div>
@@ -296,22 +277,29 @@ const CollectionsPage: React.FC = () => {
                     <h3 className="text-lg font-semibold text-gray-900">
                       {collection.name}
                     </h3>
-                    <Badge variant="secondary">{collection.season}</Badge>
+                    <Badge variant="secondary">
+                      {formatSeasonName(collection.season)}
+                    </Badge>
                   </div>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {collection.description}
+                    {collection.shortDescription || collection.description}
                   </p>
                   <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                     <span>{collection.productCount} products</span>
-                    <span>{collection.priceRange}</span>
+                    <span>
+                      {formatPriceRange(
+                        collection.priceRangeMin,
+                        collection.priceRangeMax
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-xs text-gray-500">
-                      {collection.brands.slice(0, 2).join(", ")}
-                      {collection.brands.length > 2 &&
-                        ` +${collection.brands.length - 2} more`}
+                      {collection.year} •{' '}
+                      {collection.tags?.slice(0, 2).join(', ') ||
+                        'Luxury Collection'}
                     </div>
-                    <Link href={`/collections/${collection.id}`}>
+                    <Link href={`/collections/${collection.slug}`}>
                       <Button size="sm">View Collection</Button>
                     </Link>
                   </div>

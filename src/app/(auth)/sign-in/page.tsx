@@ -1,7 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Mail,
   Shield,
@@ -10,36 +9,38 @@ import {
   EyeOff,
   Eye,
   Loader,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Controller, useForm } from "react-hook-form";
-import { signInSchema } from "@/lib/validations";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { signInWithCredentials } from "@/lib/actions/auth/auth";
-import { useRouter } from "next/navigation";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import type { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { signInWithCredentials } from '@/lib/actions/auth/auth';
+import { cn } from '@/lib/utils';
+import { signInSchema } from '@/lib/validations';
 
 const benefits = [
   {
     icon: Shield,
-    title: "Secure Access",
-    description: "Your account is protected with enterprise-grade security",
-    className: "text-blue-600",
-    backgroundColor: "bg-blue-100",
+    title: 'Secure Access',
+    description: 'Your account is protected with enterprise-grade security',
+    className: 'text-blue-600',
+    backgroundColor: 'bg-blue-100',
   },
   {
     icon: Sparkles,
-    title: "Premium Experience",
-    description: "Enjoy personalized luxury shopping experience",
-    className: "text-purple-600",
-    backgroundColor: "bg-purple-100",
+    title: 'Premium Experience',
+    description: 'Enjoy personalized luxury shopping experience',
+    className: 'text-purple-600',
+    backgroundColor: 'bg-purple-100',
   },
 ];
 
@@ -57,8 +58,8 @@ const Page = () => {
   } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
       rememberMe: false,
     },
   });
@@ -66,9 +67,9 @@ const Page = () => {
   const onSubmit = async (data: SignInFormData) => {
     const result = await signInWithCredentials(data);
     if (result.success) {
-      router.push("/");
+      router.push('/');
     } else {
-      toast.error("Error", {
+      toast.error('Error', {
         description: result.error,
       });
     }
@@ -79,7 +80,7 @@ const Page = () => {
       {/* Left side - Branding */}
       <div className="hidden lg:block space-y-8">
         <div className="text-center lg:text-left">
-          <Link href={"/"} className="inline-flex items-center space-x-3 mb-8">
+          <Link href={'/'} className="inline-flex items-center space-x-3 mb-8">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-black to-gray-800 flex items-center justify-center shadow-lg">
               <span className="text-white text-xl font-bold">L</span>
             </div>
@@ -100,23 +101,23 @@ const Page = () => {
           {benefits.map(
             (
               { title, description, icon: Icon, backgroundColor, className },
-              index,
+              index
             ) => (
               <div key={index} className="flex items-start gap-4">
                 <div
                   className={cn(
-                    "w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center flex-shrink-0",
-                    backgroundColor,
+                    'w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center flex-shrink-0',
+                    backgroundColor
                   )}
                 >
-                  <Icon className={cn("h-6 w-6 text-gray-700", className)} />
+                  <Icon className={cn('h-6 w-6 text-gray-700', className)} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
                   <p className="text-gray-600">{description}</p>
                 </div>
               </div>
-            ),
+            )
           )}
         </div>
       </div>
@@ -154,14 +155,14 @@ const Page = () => {
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    {...register("email")}
+                    {...register('email')}
                     id="email"
                     type="email"
                     placeholder="Enter your email"
                     className={cn(
-                      "pl-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl",
+                      'pl-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl',
                       errors.email &&
-                        "border-red-300 focus:border-red-500 focus:ring-red-500",
+                        'border-red-300 focus:border-red-500 focus:ring-red-500'
                     )}
                   />
                 </div>
@@ -179,14 +180,14 @@ const Page = () => {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    {...register("password")}
+                    {...register('password')}
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     className={cn(
-                      "pl-10 pr-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl",
+                      'pl-10 pr-10 h-12 border-gray-200 focus:border-black focus:ring-black rounded-xl',
                       errors.password &&
-                        "border-red-300 focus:border-red-500 focus:ring-red-500",
+                        'border-red-300 focus:border-red-500 focus:ring-red-500'
                     )}
                   />
                   <button
@@ -210,7 +211,7 @@ const Page = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Controller
-                    name={"rememberMe"}
+                    name={'rememberMe'}
                     control={control}
                     render={({ field }) => (
                       <Checkbox
@@ -241,13 +242,13 @@ const Page = () => {
                 disabled={isSubmitting}
                 className="w-full h-12 bg-gradient-to-r from-black to-gray-800 hover:from-gray-800 hover:to-black text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                {isSubmitting ? <Loader className="animate-spin" /> : "Sign in"}
+                {isSubmitting ? <Loader className="animate-spin" /> : 'Sign in'}
               </Button>
             </form>
             <Separator />
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Don&#39;t have an account?{" "}
+                Don&#39;t have an account?{' '}
                 <Link
                   href="/sign-up"
                   className="text-black hover:text-gray-700 font-medium transition-colors"

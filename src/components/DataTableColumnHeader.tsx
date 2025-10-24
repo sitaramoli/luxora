@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { ArrowDown, ArrowDownUp, ArrowUp } from "lucide-react";
-import { Column } from "@tanstack/react-table";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import React from "react";
+import { ArrowDown, ArrowDownUp, ArrowUp } from 'lucide-react';
+import { Column } from '@tanstack/react-table';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import React from 'react';
 
 interface DataTableColumnHeaderProps<TData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {
@@ -22,7 +22,7 @@ export function DataTableColumnHeader<TData, TValue>({
   }
 
   return (
-    <div className={cn("flex items-center space-x-2", className)}>
+    <div className={cn('flex items-center space-x-2', className)}>
       <Button
         variant="ghost"
         size="sm"
@@ -30,9 +30,9 @@ export function DataTableColumnHeader<TData, TValue>({
         onClick={() => column.toggleSorting()}
       >
         <span>{title}</span>
-        {column.getIsSorted() === "desc" ? (
+        {column.getIsSorted() === 'desc' ? (
           <ArrowDown className="ml-2 h-4 w-4" />
-        ) : column.getIsSorted() === "asc" ? (
+        ) : column.getIsSorted() === 'asc' ? (
           <ArrowUp className="ml-2 h-4 w-4" />
         ) : (
           <ArrowDownUp className="ml-2 h-4 w-4" />

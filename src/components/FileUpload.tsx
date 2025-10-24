@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useRef, useState } from "react";
-import { IKImage, ImageKitProvider, IKUpload, IKVideo } from "imagekitio-next";
-import config from "@/lib/config";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { CloudUpload } from "lucide-react";
+import React, { useRef, useState } from 'react';
+import { IKImage, ImageKitProvider, IKUpload, IKVideo } from 'imagekitio-next';
+import config from '@/lib/config';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { CloudUpload } from 'lucide-react';
 
 const {
   env: {
@@ -19,7 +19,7 @@ const authenticator = async () => {
     if (!response.ok) {
       const errorMessage = await response.text();
       throw new Error(
-        `Request failed with status ${response.status}: ${errorMessage}`,
+        `Request failed with status ${response.status}: ${errorMessage}`
       );
     }
 
@@ -32,11 +32,11 @@ const authenticator = async () => {
 };
 
 interface Props {
-  type: "Image" | "Video";
+  type: 'Image' | 'Video';
   accept: string;
   placeholder: string;
   folder: string;
-  variant: "dark" | "light";
+  variant: 'dark' | 'light';
   onFileChange: (filePath: string) => void;
   value?: string;
 }
@@ -58,11 +58,11 @@ const FileUpload = ({
 
   const styles = {
     button:
-      variant === "dark"
-        ? "bg-dark-300"
-        : "bg-light-600 button-gray-100 border",
-    placeholder: variant === "dark" ? "text-light-100" : "text-slate-500",
-    text: variant === "dark" ? "text-light-100" : "text-dark-400",
+      variant === 'dark'
+        ? 'bg-dark-300'
+        : 'bg-light-600 button-gray-100 border',
+    placeholder: variant === 'dark' ? 'text-light-100' : 'text-slate-500',
+    text: variant === 'dark' ? 'text-light-100' : 'text-dark-400',
   };
 
   const onError = (error: any) => {
@@ -75,14 +75,14 @@ const FileUpload = ({
     toast.success(`${type} uploaded successfully.`);
   };
   const onValidate = (file: File) => {
-    if (type === "Image") {
+    if (type === 'Image') {
       if (file.size > 20 * 1024 * 1024) {
-        toast.error("File size should be less than 20MB");
+        toast.error('File size should be less than 20MB');
         return false;
       }
-    } else if (type === "Video") {
+    } else if (type === 'Video') {
       if (file.size > 50 * 1024 * 1024) {
-        toast.error("File size should be less than 50MB");
+        toast.error('File size should be less than 50MB');
         return false;
       }
     }
@@ -112,10 +112,10 @@ const FileUpload = ({
       />
       <button
         className={cn(
-          "flex min-h-14 w-full items-center justify-center gap-1.5 rounded-md",
-          styles.button,
+          'flex min-h-14 w-full items-center justify-center gap-1.5 rounded-md',
+          styles.button
         )}
-        onClick={(e) => {
+        onClick={e => {
           e.preventDefault();
           if (ikUploadRef.current) {
             ikUploadRef.current?.click();
@@ -123,11 +123,11 @@ const FileUpload = ({
         }}
       >
         <CloudUpload width={20} height={20} />
-        <p className={cn("text-base", styles.placeholder)}>{placeholder}</p>
+        <p className={cn('text-base', styles.placeholder)}>{placeholder}</p>
         {file && file.filePath && (
           <p
             title={file.filePath}
-            className={cn("mt-1 text-center text-xs", styles.text)}
+            className={cn('mt-1 text-center text-xs', styles.text)}
           >
             {file.filePath.length > 50
               ? `${file.filePath?.substring(0, 50)}...`
@@ -148,14 +148,14 @@ const FileUpload = ({
       )}
 
       {file?.filePath &&
-        (type === "Image" ? (
+        (type === 'Image' ? (
           <IKImage
             alt={file.filePath}
             path={file.filePath}
             width={500}
             height={300}
           />
-        ) : type === "Video" ? (
+        ) : type === 'Video' ? (
           <IKVideo
             path={file.filePath}
             controls={true}

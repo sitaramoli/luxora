@@ -1,24 +1,25 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail, Phone, Send, MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import type * as z from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Mail, Phone, Send, MessageSquare } from "lucide-react";
-import { contactSchema } from "@/lib/validations";
-import { platformInfo } from "@/constants";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { platformInfo } from '@/constants';
+import { contactSchema } from '@/lib/validations';
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
@@ -40,12 +41,12 @@ const ContactPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Contact form submitted:", data);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Contact form submitted:', data);
       setIsSubmitted(true);
       reset();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error('Error submitting form:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -54,36 +55,36 @@ const ContactPage: React.FC = () => {
   const contactMethods = [
     {
       icon: Mail,
-      title: "Email Support",
-      description: "Get help via email",
+      title: 'Email Support',
+      description: 'Get help via email',
       contact: platformInfo.contact.email,
-      availability: "24/7 Response",
+      availability: '24/7 Response',
     },
     {
       icon: Phone,
-      title: "Phone Support",
-      description: "Speak with our team",
+      title: 'Phone Support',
+      description: 'Speak with our team',
       contact: platformInfo.contact.phone,
-      availability: "Mon-Fri 9AM-6PM EST",
+      availability: 'Mon-Fri 9AM-6PM EST',
     },
     {
       icon: MessageSquare,
-      title: "Live Chat",
-      description: "Chat with an agent",
-      contact: "Available on website",
-      availability: "Mon-Fri 9AM-9PM EST",
+      title: 'Live Chat',
+      description: 'Chat with an agent',
+      contact: 'Available on website',
+      availability: 'Mon-Fri 9AM-9PM EST',
     },
   ];
 
   const categories = [
-    "General Inquiry",
-    "Order Support",
-    "Product Information",
-    "Shipping & Delivery",
-    "Returns & Exchanges",
-    "Technical Support",
-    "Partnership Inquiry",
-    "Press & Media",
+    'General Inquiry',
+    'Order Support',
+    'Product Information',
+    'Shipping & Delivery',
+    'Returns & Exchanges',
+    'Technical Support',
+    'Partnership Inquiry',
+    'Press & Media',
   ];
 
   if (isSubmitted) {
@@ -134,7 +135,7 @@ const ContactPage: React.FC = () => {
               {contactMethods.map(
                 (
                   { icon: Icon, title, description, availability, contact },
-                  index,
+                  index
                 ) => (
                   <Card key={index}>
                     <CardContent className="p-6">
@@ -157,7 +158,7 @@ const ContactPage: React.FC = () => {
                       </div>
                     </CardContent>
                   </Card>
-                ),
+                )
               )}
             </div>
           </div>
@@ -174,10 +175,10 @@ const ContactPage: React.FC = () => {
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name *</Label>
                       <Input
-                        {...register("name")}
+                        {...register('name')}
                         id="name"
                         placeholder="Enter your full name"
-                        className={errors.name ? "border-red-300" : ""}
+                        className={errors.name ? 'border-red-300' : ''}
                       />
                       {errors.name && (
                         <p className="text-red-600 text-sm">
@@ -188,11 +189,11 @@ const ContactPage: React.FC = () => {
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address *</Label>
                       <Input
-                        {...register("email")}
+                        {...register('email')}
                         id="email"
                         type="email"
                         placeholder="Enter your email"
-                        className={errors.email ? "border-red-300" : ""}
+                        className={errors.email ? 'border-red-300' : ''}
                       />
                       {errors.email && (
                         <p className="text-red-600 text-sm">
@@ -206,20 +207,20 @@ const ContactPage: React.FC = () => {
                     <div className="space-y-2">
                       <Label htmlFor="category">Category *</Label>
                       <Select
-                        onValueChange={(value) => setValue("category", value)}
+                        onValueChange={value => setValue('category', value)}
                       >
                         <SelectTrigger
-                          className={errors.category ? "border-red-300" : ""}
+                          className={errors.category ? 'border-red-300' : ''}
                         >
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((category) => (
+                          {categories.map(category => (
                             <SelectItem
                               key={category}
                               value={category
                                 .toLowerCase()
-                                .replace(/\s+/g, "-")}
+                                .replace(/\s+/g, '-')}
                             >
                               {category}
                             </SelectItem>
@@ -235,10 +236,10 @@ const ContactPage: React.FC = () => {
                     <div className="space-y-2">
                       <Label htmlFor="subject">Subject *</Label>
                       <Input
-                        {...register("subject")}
+                        {...register('subject')}
                         id="subject"
                         placeholder="Brief description of your inquiry"
-                        className={errors.subject ? "border-red-300" : ""}
+                        className={errors.subject ? 'border-red-300' : ''}
                       />
                       {errors.subject && (
                         <p className="text-red-600 text-sm">
@@ -251,11 +252,11 @@ const ContactPage: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="message">Message *</Label>
                     <Textarea
-                      {...register("message")}
+                      {...register('message')}
                       id="message"
                       placeholder="Please provide details about your inquiry..."
                       rows={6}
-                      className={errors.message ? "border-red-300" : ""}
+                      className={errors.message ? 'border-red-300' : ''}
                     />
                     {errors.message && (
                       <p className="text-red-600 text-sm">
@@ -296,26 +297,26 @@ const ContactPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {[
               {
-                question: "How do I track my order?",
+                question: 'How do I track my order?',
                 answer:
-                  "You can track your order by logging into your account and visiting the Orders section, or by using the tracking number sent to your email.",
+                  'You can track your order by logging into your account and visiting the Orders section, or by using the tracking number sent to your email.',
               },
               {
-                question: "What is your return policy?",
+                question: 'What is your return policy?',
                 answer:
-                  "We offer a 30-day return policy for all items in original condition. Returns are free for defective items.",
+                  'We offer a 30-day return policy for all items in original condition. Returns are free for defective items.',
               },
               {
-                question: "Do you ship internationally?",
+                question: 'Do you ship internationally?',
                 answer:
-                  "Yes, we ship to over 25 countries worldwide. International shipping rates and delivery times vary by location.",
+                  'Yes, we ship to over 25 countries worldwide. International shipping rates and delivery times vary by location.',
               },
               {
-                question: "How do I become a merchant?",
+                question: 'How do I become a merchant?',
                 answer:
-                  "You can apply to become a merchant by submitting an application through our merchant portal. Our team will review your" +
-                  " application" +
-                  " within 5-7 business days.",
+                  'You can apply to become a merchant by submitting an application through our merchant portal. Our team will review your' +
+                  ' application' +
+                  ' within 5-7 business days.',
               },
             ].map((faq, index) => (
               <Card key={index}>
